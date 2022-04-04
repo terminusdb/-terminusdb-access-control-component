@@ -1,1 +1,1 @@
-# -terminusdb-access-control-component
+# terminusdb-access-control-component
