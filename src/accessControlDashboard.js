@@ -21,7 +21,7 @@ export const AccessControlDashboard = (clientAccessControl)=>{
     async function callGetUserTeamRole(orgName,userEmail){
 		try{
 			const teamRole = await __clientAccessControl.getTeamUserRole(orgName)
-            __teamUserRole = teamRole.userRole
+            setTeamActions(teamRole.userRole)
 		}catch(err){
 			console.log(err.message)
 		}
