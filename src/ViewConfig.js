@@ -26,6 +26,17 @@ export const getAskAccessListConfig = (limit,getDeleteButton) => {
     return tabConfig
 }
 
+export const getAllUsersListConfig = (limit,getActionButtons) => {
+    const tabConfig= TerminusClient.View.table();
+    tabConfig.column_order("name","actions")
+    tabConfig.column("name").header("User Name")
+    tabConfig.column("actions").header(" ")
+    tabConfig.column("actions").render(getActionButtons)
+    tabConfig.pager("local")
+    tabConfig.pagesize(limit)
+    return tabConfig
+}
+
 
 export const getUsersListConfig = (limit,getActionButtons,getPicture) => {
     const tabConfig= TerminusClient.View.table();

@@ -1,6 +1,6 @@
 import React, {useEffect} from "react"
 import {Row, Badge, Col, Card,Button} from "react-bootstrap"
-import {InvitationHook} from "../hooks/InvitationHook"
+import {AccessControlHook} from "../hooks/AccessControlHook"
 import {WOQLTable} from '@terminusdb/terminusdb-react-table'
 import {getAskAccessListConfig} from "../ViewConfig"
 import {RiDeleteBin7Line} from "react-icons/ri"
@@ -11,8 +11,7 @@ import  {formatCell} from "./formatData"
 export const AskToJoinList = ({team,setShow,accessControlDashboard,options}) => {  
     if(!accessControlDashboard) return ""
     const {deleteTeamRequestAccess,loading,
-        getTeamRequestAccessList,teamRequestAccessList,
-        sendInvitation} =  InvitationHook(accessControlDashboard.accessControl(),options)
+        getTeamRequestAccessList,teamRequestAccessList} =  AccessControlHook(accessControlDashboard.accessControl(),options)
     
     const teamRequestAccessListArr = Array.isArray(teamRequestAccessList) ? teamRequestAccessList : []
     const invitesCount = teamRequestAccessListArr.length 

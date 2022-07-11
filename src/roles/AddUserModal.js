@@ -5,7 +5,8 @@ import {AccessControlHook} from "../hooks/AccessControlHook"
 
 import { RoleListModal } from "./RoleList"
 
-export const NewMemberModal = ({show, setShow, team, accessControlDashboard,options,defaultEmail}) => {
+//create user if do not exists and add to team
+export const AddUserModal = ({show, setShow, team, accessControlDashboard,options,defaultName}) => {
     if(!accessControlDashboard) return ""
     const {sendInvitation,
           successMessage,
@@ -14,18 +15,20 @@ export const NewMemberModal = ({show, setShow, team, accessControlDashboard,opti
           errorMessage} =  AccessControlHook(accessControlDashboard.accessControl(),options)
     const [error, setError]=useState(false)
 
-    const emailInput = useRef(null);
+    const userId = useRef(null);
+    const password = useRef(null);
     const roles = accessControlDashboard.getRolesList()
 
-    async function handleInvite(role){
+    async function addUser(role){
         const email = emailInput.current.value
         //alert(email)
         if(!email || email === "") {
             setError(true)
             return
         }else{
-            await sendInvitation(team,email,role)
-            emailInput.current.value = ""
+           // await sendInvitation(team,email,role)
+            userId.current.value = ""
+            password.current.value = ""
             setError(false)
                        
         }
@@ -38,9 +41,9 @@ export const NewMemberModal = ({show, setShow, team, accessControlDashboard,opti
     }
 
     const propsObj = {setShow, team:team,
-                title:`Invite a new member to your team - ${team}`,
-                clickButton:handleInvite}
-    const value =  defaultEmail ? {value:defaultEmail} : {}
+                title:`Add a menber to the team - ${team}`,
+                clickButton:addUser}
+    const value =  defaultName ? {value:defaultName, disabled:true} : {}
 
     return <RoleListModal {...propsObj} 
                 loading={loading} 
@@ -52,17 +55,27 @@ export const NewMemberModal = ({show, setShow, team, accessControlDashboard,opti
                 <BiError className="text-danger mt-1 mr-1"/><p className="text-danger">Email is mandatory</p>
             </span>}
             <Form onKeyPress={handleKeyPress}>
-                <Form.Group>
+                <Form.Group className="mb-3">
                     <Form.Control
-                        ref={emailInput}
+                        ref={password}
                         {...value}
                         type="text"
-                        placeholder="Email"
+                        placeholder="User Id"
                         aria-describedby="inputGroupPrepend"
                         required
-                        onBlur={resetInvitation}
+                        //onBlur={resetInvitation}
                     />
                 </Form.Group>
+               {!defaultName &&<Form.Group>
+                    <Form.Control
+                        ref={userId}
+                        type="password"
+                        placeholder="Password"
+                        aria-describedby="inputGroupPrepend"
+                        required
+                        //onBlur={resetInvitation}
+                    />
+                </Form.Group>}
             </Form>
         </RoleListModal>
 }

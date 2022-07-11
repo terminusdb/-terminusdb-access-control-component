@@ -1,5 +1,6 @@
 import React , { useState } from "react"
-export const InvitationHook=(clientAccessControl,options)=> {
+
+export const AccessControlHook=(clientAccessControl,options)=> {
 	const [loading,setLoading]=useState(null)
     const [orgUsers,setOrgUsers]=useState([])
     const [orgInvitations,setOrgInvitations]=useState([])
@@ -8,6 +9,8 @@ export const InvitationHook=(clientAccessControl,options)=> {
     const [userDatabaseList,setUserDatabaseList]=useState(null)
     const [successMessage,setSuccessMessage] =useState(null)
     const [teamRequestAccessList,setTeamRequestAccessList] =useState([])
+
+    const [usersList,setAllUsers]=useState([])
     
 
     const resetInvitation = ()=>{
@@ -189,10 +192,68 @@ export const InvitationHook=(clientAccessControl,options)=> {
         }
 
     }
+
+    async function createRole(id,name,actions){
+        setLoading(true)
+		try{
+			await clientAccessControl.createRole(id,name,actions)
+		}catch(err){
+            const data = err.response.data
+			setError(data.err)
+		}finally{
+        	setLoading(false)
+        }
+
+    }
+
+    /*
+    * return all the users in the system database
+    */
+    async function getAllUsers(){
+        setLoading(true)
+		try{
+			//await clientAccessControl.getAllUsers()
+            setAllUsers([{"name":"user01","@id":"User/user01"}])
+		}catch(err){
+            const data = err.response.data
+			setError(data.err)
+		}finally{
+        	setLoading(false)
+        }
+    }
+
+    async function deleteUser(){
+        setLoading(true)
+		try{
+			await clientAccessControl.deleteUser()
+		}catch(err){
+            const data = err.response.data
+			setError(data.err)
+		}finally{
+        	setLoading(false)
+        }
+    }
+
+    async function addUserToTeam(id,name,actions){
+        setLoading(true)
+		try{
+			const result = await clientAccessControl.createRole(id,name,actions)
+            setAllUsers(result)
+		}catch(err){
+            const data = err.response.data
+			setError(data.err)
+		}finally{
+        	setLoading(false)
+        }
+    }
     
     return {
             //setEmail,
             //email,
+            getAllUsers,
+            usersList,
+            createRole,
+            addUserToTeam,
             teamRequestAccessList,
             sendTeamAccessRequest,
             deleteTeamRequestAccess,

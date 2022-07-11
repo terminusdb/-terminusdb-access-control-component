@@ -9,16 +9,35 @@ export const AccessControlDashboard = (clientAccessControl)=>{
     let __clientAccessControl = clientAccessControl
     //let __currentUser = 
 
-    async function callGetRolesList(){
+    async function callGetRolesList(roleRemoveFilter){
             try{
                const list = await __clientAccessControl.getAccessRoles()
                __rolesList= list
+               if(roleRemoveFilter){
+                     __rolesList = list.filter(item => !roleRemoveFilter[item["@id"]])
+               }
+              
             }catch(err){
-                console.log('I can not get the role list')
+                console.log('I can not get the role list',err)
             }
     }
+
+    function createNewOrganization(orgName){
+        return __clientAccessControl.createOrganization(orgName)
+    }
+
+    function createNewRole(roleId, label, actionsArr){
+        if(__clientAccessControl.createRole){
+            return __clientAccessControl.createRole(roleId, label, actionsArr)
+        }else{
+            throw new Error("this api is not implemented in TerminusX")
+        }
+    }
+
+
     //this is will be a different call 
-    async function callGetUserTeamRole(orgName,userEmail){
+    // I have to override this 
+    async function callGetUserTeamRole(orgName){
 		try{
 			const teamRole = await __clientAccessControl.getTeamUserRole(orgName)
             setTeamActions(teamRole.userRole)
@@ -119,6 +138,8 @@ export const AccessControlDashboard = (clientAccessControl)=>{
 
 
     return {createDB,
+            createNewOrganization,
+            createNewRole,
             classFrame,
             instanceRead,
             instanceWrite,

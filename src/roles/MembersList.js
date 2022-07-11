@@ -6,7 +6,7 @@ import {AiOutlineDatabase} from "react-icons/ai"
 import {GrUserAdmin} from "react-icons/gr"
 import {WOQLTable} from '@terminusdb/terminusdb-react-table'
 import {getUsersListConfig,getUsersDatabaseListConfig} from "../ViewConfig"
-import {InvitationHook} from "../hooks/InvitationHook"
+import {AccessControlHook} from "../hooks/AccessControlHook"
 import {RoleListModal} from "./RoleList"
 import {formatCell} from "./formatData"
 
@@ -18,13 +18,15 @@ export const MembersList = ({team,currentUser,accessControlDashboard,options}) =
     const [show, setShow] = useState(false)
     const roles = accessControlDashboard.getRolesList()
 
+    const localUser = currentUser || {}
+ 
     const {deleteUser,getOrgUsers,orgUsers,createUserRole,
           getUserDatabasesRoles,
           userDatabaseList,
           updateUserRole,
           loading,
           errorMessage,
-          successMessage} =  InvitationHook(accessControlDashboard.accessControl())
+          successMessage} =  AccessControlHook(accessControlDashboard.accessControl())
     
     //to be review the roles list doesn't change
     useEffect(() => {
@@ -70,7 +72,7 @@ export const MembersList = ({team,currentUser,accessControlDashboard,options}) =
     //maybe an utilityfunction woqlClient
     function getActionButtons (cell) {       
         const currentSelected = formatCell(cell,"TEAM" , team)
-        if(!accessControlDashboard.isAdmin() || currentSelected.email === currentUser.email )return <span className="d-flex"></span>
+        if(!accessControlDashboard.isAdmin() || currentSelected.email === localUser.email )return <span className="d-flex"></span>
         return <span className="d-flex">          
             {options.interface.memberList.showDatabase && 
             <Button variant="success" size="sm"   title={`show user dataproducts role`} onClick={() => getUserDatabaseList(currentSelected)}>
@@ -91,7 +93,7 @@ export const MembersList = ({team,currentUser,accessControlDashboard,options}) =
 
     function getActionDbButtons (cell) {       
         const currentSelected = formatCell(cell,"DATAPRODUCT")
-        if(currentSelected['email']===currentUser)return <span className="d-flex"></span>
+        if(currentSelected['email']===localUser.email)return <span className="d-flex"></span>
         return <span className="d-flex">          
             <Button variant="success" size="sm"  title={`change user roles`} onClick={() => changeUserRoleForScope(currentSelected)}>
                 <GrUserAdmin/> 
@@ -101,7 +103,8 @@ export const MembersList = ({team,currentUser,accessControlDashboard,options}) =
 
 
     function getPicture (cell) {
-        const picture = cell.row.original["picture"] ? cell.row.original["picture"]['@value'] : ''
+        const picture = cell.row.original["picture"] ? cell.row.original["picture"]['@value'] : undefined
+        if (!picture) return ""
         return <img src={picture} 
                     alt={"Profile"}
                     className="nav__main__profile__img mr-4"
@@ -140,6 +143,7 @@ export const MembersList = ({team,currentUser,accessControlDashboard,options}) =
                 </Card.Header>
                 <Card.Body>
                     <WOQLTable
+                        dowloadConfig={{filename:"user_access_level.csv",headers:["email","role"], className:"btn btn-success"}}
                         result={orgUserArr}
                         freewidth={true}
                         view={(tableConfig ? tableConfig.json() : {})}
