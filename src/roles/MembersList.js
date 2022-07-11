@@ -47,11 +47,14 @@ export const MembersList = ({team,currentUser,accessControlDashboard,options}) =
         if(currentRoleToUpdate.capability){
             updateUserRole(team,currentRoleToUpdate.userid,currentRoleToUpdate.capability,role,currentRoleToUpdate.scope).then(()=>{
                 if(currentRoleToUpdate.type="TEAM"){
-                    selectTeamRow.role=role
+                    // to be review
+                   // selectTeamRow = selectTeamRow || {}
+                   // selectTeamRow.role=role
                     //setSelectTeamRow(selectTeamRow)
                 }
-                setShow(false)
-               
+                if(!errorMessage){
+                    setShow(false)
+                } 
             })
         }else{
             createUserRole(team,currentRoleToUpdate.userid,role,currentRoleToUpdate.scope).then(()=>{
