@@ -58,9 +58,9 @@ export const InvitationHook=(clientAccessControl,options)=> {
         try{
             await clientAccessControl.updateUserRole(userid, capid, scope, role, orgName)
             if(typeof scope === "string" && scope.indexOf("Organization")> -1){
-                await getOrgUsers(orgid)
+                await getOrgUsers(orgName)
             }
-            await getUserDatabasesRoles(orgid,userid)
+            await getUserDatabasesRoles(orgName,userid)
             if(successMessage)setSuccessMessage("The role has been update")
         }catch(err){
             setError("I can not update the role")
