@@ -11,7 +11,7 @@ import {RoleListModal} from "./RoleList"
 import {formatCell} from "./formatData"
 import {UserDatabasesList} from "./UserDatabasesList"
 
-export const MembersList = ({team,currentUser,accessControlDashboard,options}) => {  
+export const MembersListLocal = ({organizationInfo,currentUser,accessControlDashboard,options}) => {  
     if(!accessControlDashboard)return ""
 
     const [selectTeamRow,setSelectTeamRow]=useState(null)
@@ -20,8 +20,8 @@ export const MembersList = ({team,currentUser,accessControlDashboard,options}) =
     const roles = accessControlDashboard.getRolesList()
 
     const localUser = currentUser || {}
- 
-    const {deleteUserFromOrganization,getOrgUsers,orgUsers,createUserRole,
+    const team = organizationInfo.name 
+    const {deleteUserFromOrganization,getOrgUsersLocal,orgUsers,createUserRole,
           updateUserRole,
           loading,
           errorMessage,
@@ -29,7 +29,7 @@ export const MembersList = ({team,currentUser,accessControlDashboard,options}) =
     
     //to be review the roles list doesn't change
     useEffect(() => {
-        getOrgUsers(team,true)
+        getOrgUsersLocal(team,true)
     }, [team])
 
     const orgUserArr = Array.isArray(orgUsers) ? orgUsers : []
@@ -72,7 +72,7 @@ export const MembersList = ({team,currentUser,accessControlDashboard,options}) =
     //maybe an utilityfunction woqlClient
     function getActionButtons (cell) {       
         const currentSelected = formatCell(cell,"TEAM" , team)
-        if(!accessControlDashboard.isAdmin() || currentSelected.email === localUser.email )return <span className="d-flex"></span>
+       // if(!accessControlDashboard.isAdmin() || currentSelected.email === localUser.email )return <span className="d-flex"></span>
         return <span className="d-flex">          
             {options.interface.memberList.showDatabase && 
             <Button variant="success" size="sm"   title={`show user dataproducts role`} onClick={() => getUserDatabaseList(currentSelected)}>

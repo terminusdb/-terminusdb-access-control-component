@@ -1,41 +1,42 @@
 import React, {useState, useRef} from "react"
 import {AccessControlHook} from "../hooks/AccessControlHook"
-import {Modal, Button, Form,Row,Col} from "react-bootstrap"
+import {Modal, Button, Form,Row,Col,Alert} from "react-bootstrap"
 import {BsFillPeopleFill} from "react-icons/bs"
 //import {PROGRESS_BAR_COMPONENT, TERMINUS_DANGER,TERMINUS_SUCCESS} from "./constants"
 import {UTILS} from "@terminusdb/terminusdb-client"
 
-
-export const NewRoleModal= ({show, setShow, accessControlDashboard,options}) => {
+export const CreateRoleModal= ({show, setShow, accessControlDashboard,options,updateRolesList}) => {
     if(!accessControlDashboard) return ""
-
-
-    const {createRole,
-          successMessage,
-          loading,
-          resetInvitation,
-          errorMessage} =  AccessControlHook(accessControlDashboard.accessControl(),options)
-    const [error, setError]=useState(false)
+    const {createRole,errorMessage,loading,setError} =  AccessControlHook(accessControlDashboard,options)     
     const [actionsSelected, setActions] = useState({})
 
-    const roleId = useRef(null);
     const roleName = useRef(null);
-    const roles = accessControlDashboard.getRolesList()
-
-    async function runCreateRole(role){
-        const id = roleId.current.value
+    
+    const runCreateRole = async () => {
+        //const id = roleId.current.value
         const name = roleName.current.value
-        
         //alert(email)
-        if(!roleId || roleId === "") {
-            setError(true)
+        if(!name || name === "") {
+            setError("Role name is mandatory")
             return
         }else{
-            //await createRole()
-            roleId.current.value = ""
-            roleName.current.value = ""  
-            setError(false)                    
+            const actions = Object.values(actionsSelected)
+            const done = await createRole(name,actions)         
+            if(done){
+                roleName.current.value = ""
+                updateRolesList()  
+                setShow(false)
+            }                  
         }
+    }
+
+    function checkName (){
+        const name = roleName.current.value
+        if(!name || name === "") {
+            setError("Role name is mandatory")
+            return
+        }
+        setError(false)
     }
 
     function addAction(evt){
@@ -57,8 +58,7 @@ export const NewRoleModal= ({show, setShow, accessControlDashboard,options}) => 
     function ActionList (){
         const actArr = Object.values(UTILS.ACTIONS)
         const checkList = []
-        alert(actArr.length)
-       
+        
         for(let i=0; i<actArr.length; i+=2) {
            const item = actArr[i]
            const itemleft =  actArr[i+1]     
@@ -87,29 +87,15 @@ export const NewRoleModal= ({show, setShow, accessControlDashboard,options}) => 
             <h5 className="text-success mt-3 mb-3">{options.labels.createRole}</h5>
         </Modal.Header>
     <Modal.Body>
-        {/*teamCreated && 
-        <Alerts id="alert_team_created" message={"the team has been created"} type={TERMINUS_SUCCESS}/>}
-        {errorMessage &&  <Alerts id="alert_team_created_error" message={errorMessage} type={TERMINUS_DANGER}/>}
-
-        {error && <span className="d-flex">
-        <BiError className="text-danger mt-1 mr-1"/><p className="text-danger">Team name is mandatory</p>
-        </span>*/}
+        {errorMessage &&  <Alert variant="danger"  onClose={() => setError(false)} dismissible>
+            {errorMessage}</Alert>}
         <Form>
-            <Form.Group>
-                <Form.Control
-                    ref={roleId}
-                    type="text"
-                    id="id"
-                    placeholder="Role id"
-                    aria-describedby="inputGroupPrepend"
-                    required
-                />
-            </Form.Group>
             <Form.Group className="mt-3">
                 <Form.Control
                     ref={roleName}
                     type="text"
                     id="name"
+                    onBlur={checkName}
                     placeholder="Role name"
                     aria-describedby="inputGroupPrepend"
                     required
@@ -121,10 +107,9 @@ export const NewRoleModal= ({show, setShow, accessControlDashboard,options}) => 
         </Form>
     </Modal.Body>
     <Modal.Footer>
-    {!loading && <Button className="btn-info" onClick={runCreateRole} id="create_new_team_button">
-                <BsFillPeopleFill className="mr-2"/>{options.labels.createRole}
-            </Button>}
-    {loading && <div>`Creating a new team ...` </div> }
+        <Button disabled={loading} className="btn-info" onClick={()=>{runCreateRole(errorMessage)}} id="create_new_team_button">
+            <BsFillPeopleFill className="mr-2"/>{loading ? 'Loading ...' : options.labels.createRole} 
+        </Button>
     </Modal.Footer>
     </Modal>
 }

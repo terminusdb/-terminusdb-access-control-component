@@ -4,57 +4,53 @@ import {AccessControlHook} from "../hooks/AccessControlHook"
 import {WOQLTable} from '@terminusdb/terminusdb-react-table'
 import {getListConfigBase} from "../ViewConfig"
 import {RiDeleteBin7Line} from "react-icons/ri"
-import {AiOutlineUserAdd} from "react-icons/ai"
-import { GET_ALL_USERS, DELETE_USER } from "../utils/default"
+import {FaUsers} from "react-icons/fa"
 import { DeleteElementModal } from "./DeleteElementModal"
-import { CreateUserModal } from "./CreateUserModal"
-import {AddUserCapabilityModal} from "./AddUserCapabilityModal"
+import { CreateOrganizationModal } from "./CreateOrganizationModal"
+import {GET_ALL_ORGANIZATIONS,DELETE_ORGANIZATION} from "../utils/default"
+import {MembersListLocal} from "./MembersListLocal"
 
-export const AllUserList = ({accessControlDashboard,options}) => {  
+export const OrganizationList = ({accessControlDashboard,options}) => {  
     if(!accessControlDashboard) return ""
 
     const [showDelete, setShowDelete] = useState(false)
-    const [showAdd, setShowAdd ]= useState(false)
-    const [showUpdate, setShowUpdate ]= useState(false)
+    const [showAdd, setShowAdd] = useState(false)
+
+    const [viewOrgUsers, setViewOrgUsers] = useState(false)
 
     const [rowSelected, setRowSelected] = useState(false)
-
-    const {loading,resultTable, getResultTable} =  AccessControlHook(accessControlDashboard,options)
+    const {loading,resultTable, getResultTable} =  AccessControlHook(accessControlDashboard,options)    
     
-    const tableListArr = Array.isArray(resultTable) ? resultTable : []
+    const tableListArr = Array.isArray(resultTable) ? resultTable.reverse() : []
 
     // all the system database user
     useEffect(() => {
         updateResultTable()
     }, [])
 
-    const updateResultTable = () =>{
-        getResultTable(GET_ALL_USERS)
+    function updateResultTable(){
+        getResultTable(GET_ALL_ORGANIZATIONS)
     }
-
 
     function deleteAction(cell){
         setRowSelected(cell)
         setShowDelete(true)
     }
 
-    function userToUpdate(cell){
-        setRowSelected(cell)
-        setShowUpdate(true)
-    }
-
 
     function getActionButtons (cell) {
-        const invFullId = cell.row.original['@id']
+        //const invFullId = cell.row.original['@id']
         const name = cell.row.original['name']
-        return <React.Fragment><span className="d-flex">
-            <Button variant="danger" size="sm" className="ml-5" title={`delete - name`} onClick={() => deleteAction(cell.row.original)}>
-                <RiDeleteBin7Line/> 
-            </Button>
-            <Button variant="success" size="sm" className="ml-5" title={`add - name`} onClick={() => userToUpdate(cell.row.original)}>
-                <AiOutlineUserAdd/> 
-            </Button>
-        </span></React.Fragment>
+        return <React.Fragment>
+                <span className="d-flex">             
+                <Button variant="success" size="sm"   title={`show user dataproducts role`} onClick={() => setViewOrgUsers(cell.row.original)}>
+                    <FaUsers/> 
+                </Button>
+                <Button variant="danger" size="sm" className="ml-5" title={`delete - name`} onClick={() => deleteAction(cell.row.original)}>
+                  <RiDeleteBin7Line/> 
+                </Button>
+                </span>
+                </React.Fragment>
         
     }
     const tableConfig = getListConfigBase(10, getActionButtons)
@@ -68,7 +64,6 @@ export const AllUserList = ({accessControlDashboard,options}) => {
     }
     
 
-   
     return <React.Fragment>
         {showDelete && <DeleteElementModal 
                         updateTable={updateResultTable}
@@ -76,24 +71,16 @@ export const AllUserList = ({accessControlDashboard,options}) => {
                         showModal={showDelete} 
                         setShowModal={setShowDelete} 
                         elementName={rowSelected.name} 
-                        elementType="User"
-                        methodName={DELETE_USER}/>}
+                        elementType="Organization"
+                        methodName={DELETE_ORGANIZATION}/>}
                         
-        {showAdd && <CreateUserModal
-                        options={options} 
-                        updateTable={updateResultTable}
-                        accessControlDashboard={accessControlDashboard} 
-                        showModal={showAdd} 
-                        setShowModal={setShowAdd}/>}
-        {showUpdate && <AddUserCapabilityModal
-                         showModal={showUpdate} 
-                         setShowModal={setShowUpdate}
-                         accessControlDashboard={accessControlDashboard} 
-                         options={options} 
-                         defaultName={rowSelected.name}
-                         rowSelected ={rowSelected}
-                         team = "Organization/fra_org" 
-                        />}
+        {showAdd && <CreateOrganizationModal
+                                options={options} 
+                                updateTable={updateResultTable}
+                                accessControlDashboard={accessControlDashboard} 
+                                showModal={showAdd} 
+                                setShowModal={setShowAdd}/>}
+       
         <Row className="mr-5 ml-2">
             <Card className="shadow-sm m-4">
                 <Card.Header className="bg-transparent">
@@ -106,7 +93,7 @@ export const AllUserList = ({accessControlDashboard,options}) => {
                         <Col >
                             <button onClick={()=>setShowAdd(true)} style={{maxWidth:"200px"}} title="Create New Role"
                                     type="button" className="btn-new-data-product mr-1 pt-2 pb-2 pr-4 pl-4 btn btn-sm btn btn-info">
-                                       Add User
+                                       Add Organization
                             </button>
                         </Col>
                     </Row>
@@ -120,10 +107,13 @@ export const AllUserList = ({accessControlDashboard,options}) => {
                         start={0}
                         orderBy={""} 
                         loading={loading}
-                        totalRows={ tableListArr.length}
+                        totalRows={tableListArr.length}
                     />
                 </Card.Body>
             </Card>
         </Row>
+        {viewOrgUsers && <MembersListLocal organizationInfo={viewOrgUsers} currentUser={"admin"}
+                             accessControlDashboard={accessControlDashboard}
+                             options={options}/>}
     </React.Fragment>
 }

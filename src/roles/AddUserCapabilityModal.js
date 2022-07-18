@@ -6,13 +6,12 @@ import {AccessControlHook} from "../hooks/AccessControlHook"
 import { RoleListModal } from "./RoleList"
 
 //create user if do not exists and add to team
-export const AddUserModal = ({show, setShow, team, accessControlDashboard,options,defaultName}) => {
+export const AddUserCapabilityModal = ({showModal, setShowModal, team, accessControlDashboard,options,defaultName,rowSelected}) => {
     if(!accessControlDashboard) return ""
-    const {sendInvitation,
-          successMessage,
+    const {successMessage,
+            addUserToTeam,
           loading,
-          resetInvitation,
-          errorMessage} =  AccessControlHook(accessControlDashboard.accessControl(),options)
+          errorMessage} =  AccessControlHook(accessControlDashboard,options)
     const [error, setError]=useState(false)
 
     const userId = useRef(null);
@@ -20,18 +19,19 @@ export const AddUserModal = ({show, setShow, team, accessControlDashboard,option
     const roles = accessControlDashboard.getRolesList()
 
     async function addUser(role){
-        const email = emailInput.current.value
+        const userId =  rowSelected["@id"]
+        //const name = userId.current.value
+        //const passwordVal = password.current && password.current.value ? password.current.value : null
         //alert(email)
-        if(!email || email === "") {
-            setError(true)
-            return
-        }else{
-           // await sendInvitation(team,email,role)
-            userId.current.value = ""
-            password.current.value = ""
-            setError(false)
-                       
-        }
+        //if(!name || (!passwordVal && !defaultName)) {
+          //  setError(true)
+           // return
+        //}else{
+        await addUserToTeam(team,userId,'',role)
+        //userId.current.value = ""
+        if(!defaultName)password.current.value = ""
+        setError(false)                     
+        //}
     }
 
     function handleKeyPress(e) {
@@ -40,7 +40,7 @@ export const AddUserModal = ({show, setShow, team, accessControlDashboard,option
         }
     }
 
-    const propsObj = {setShow, team:team,
+    const propsObj = {setShow:setShowModal, team:team,
                 title:`Add a menber to the team - ${team}`,
                 clickButton:addUser}
     const value =  defaultName ? {value:defaultName, disabled:true} : {}
@@ -49,7 +49,7 @@ export const AddUserModal = ({show, setShow, team, accessControlDashboard,option
                 loading={loading} 
                 errorMessage={errorMessage} 
                 successMessage={successMessage} 
-                show={show}
+                show={showModal}
                 rolesList={roles}>
             {error && <span className="d-flex">
                 <BiError className="text-danger mt-1 mr-1"/><p className="text-danger">Email is mandatory</p>
@@ -57,23 +57,21 @@ export const AddUserModal = ({show, setShow, team, accessControlDashboard,option
             <Form onKeyPress={handleKeyPress}>
                 <Form.Group className="mb-3">
                     <Form.Control
-                        ref={password}
+                        ref={userId}
                         {...value}
                         type="text"
                         placeholder="User Id"
                         aria-describedby="inputGroupPrepend"
                         required
-                        //onBlur={resetInvitation}
                     />
                 </Form.Group>
                {!defaultName &&<Form.Group>
                     <Form.Control
-                        ref={userId}
+                        ref={password}
                         type="password"
                         placeholder="Password"
                         aria-describedby="inputGroupPrepend"
                         required
-                        //onBlur={resetInvitation}
                     />
                 </Form.Group>}
             </Form>

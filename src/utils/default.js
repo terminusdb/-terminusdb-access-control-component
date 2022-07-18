@@ -8,10 +8,13 @@ export const defaultSetting ={
         createRole: "Create a new Role"
     },
     tabs:{
-        MEMBERS_TAB:true,
+        MEMBERS_TAB:false,
         INVITATION_TAB:false,
         REQUEST_ACCESS:false,
-        ALL_USER:true
+        
+        ALL_USER:true,
+        ROLES_LIST:true,
+        ORGANIZATION_LIST:true
     },
     buttons:{
         ADD_USER:true,
@@ -33,5 +36,16 @@ export const defaultSetting ={
         }
     }
 }
+
+//method name
+export const GET_ALL_ORGANIZATIONS= "getAllOrganizations"
+export const DELETE_ORGANIZATION = "deleteOrganization"
+export const CREATE_ORGANIZATION = "createOrganization"
+
+export const DELETE_ROLE = "deleteRole"
+
+export const GET_ALL_USERS= "getAllUsers"
+export const DELETE_USER = "deleteUser"
+export const CREATE_USER = "createUser"
 
 //Role/infoReader

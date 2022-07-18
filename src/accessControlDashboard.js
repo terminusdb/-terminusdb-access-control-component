@@ -17,12 +17,13 @@ export const AccessControlDashboard = (clientAccessControl)=>{
                      __rolesList = list.filter(item => !roleRemoveFilter[item["@id"]])
                }
               
+               return __rolesList
             }catch(err){
                 console.log('I can not get the role list',err)
             }
     }
 
-    function createNewOrganization(orgName){
+    /*function createNewOrganization(orgName){
         return __clientAccessControl.createOrganization(orgName)
     }
 
@@ -32,7 +33,7 @@ export const AccessControlDashboard = (clientAccessControl)=>{
         }else{
             throw new Error("this api is not implemented in TerminusX")
         }
-    }
+    }*/
 
 
     //this is will be a different call 
@@ -138,8 +139,6 @@ export const AccessControlDashboard = (clientAccessControl)=>{
 
 
     return {createDB,
-            createNewOrganization,
-            createNewRole,
             classFrame,
             instanceRead,
             instanceWrite,

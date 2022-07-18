@@ -11,7 +11,7 @@ export const NewMemberModal = ({show, setShow, team, accessControlDashboard,opti
           successMessage,
           loading,
           resetInvitation,
-          errorMessage} =  AccessControlHook(accessControlDashboard.accessControl(),options)
+          errorMessage} =  AccessControlHook(accessControlDashboard,options)
     const [error, setError]=useState(false)
 
     const emailInput = useRef(null);

@@ -8,17 +8,16 @@ import {InvitationsList} from "./roles/InvitationsList"
 import {MembersList} from "./roles/MembersList"
 import {defaultSetting} from "./utils/default"
 import {AskToJoinList} from "./roles/AskToJoinList"
-import { NewRoleModal } from "./roles/NewRoleModal"
-import { AddUserModal } from "./roles/AddUserModal"
 import {AllUserList} from "./roles/AllUserList"
+import { RoleListTable } from "./roles/RolesListTable"
+import { OrganizationList } from "./roles/OrganizationList"
 
 export const TeamMembers = ({organization,currentUser,accessControlDashboard,options}) => {
-    const [key, setKey] = useState(MEMBERS_TAB)
+    if(!accessControlDashboard) return ""
+    const [key, setKey] = useState()
 
     const [showNewMemberModal, setShowNewMemberModal] = useState(false)
-    const [showNewRoleModal, setShowNewRoleModal] = useState(false)
-    const [showNewUserModal, setShowNewUserModal] = useState(false)
-
+   
     const [defaultEmail, setDefaultEmail] = useState(false)
     const [defaultUser, setDefaultUser] = useState(false)
 
@@ -29,11 +28,6 @@ export const TeamMembers = ({organization,currentUser,accessControlDashboard,opt
         setShowNewMemberModal(show)
     }
 
-    const showNewUserAction = (userId) => {
-        setDefaultUser(userId)
-        setShowNewUserModal(true)
-    }
-
     return <React.Fragment>
         <div style={{marginTop: "20px"}} className="mb-3">
             <Row className="ml-3">
@@ -41,9 +35,7 @@ export const TeamMembers = ({organization,currentUser,accessControlDashboard,opt
                 <h6 className="text-muted fw-bold">{`${settings.labels.inviteAddText}`}</h6>
             </Row>
         </div>
-        {showNewUserModal && <AddUserModal defaultName={defaultUser} options={settings} accessControlDashboard={accessControlDashboard} show={showNewUserModal} setShow={setShowNewUserModal}/>}
-       
-        {showNewRoleModal && <NewRoleModal options={settings} accessControlDashboard={accessControlDashboard} show={showNewRoleModal} setShow={setShowNewRoleModal}/>}
+
         {showNewMemberModal && 
             <NewMemberModal accessControlDashboard={accessControlDashboard} options={settings} defaultEmail={defaultEmail}
                 team={organization} show={showNewMemberModal} setShow={setShowNewMemberModal}/>
@@ -55,17 +47,12 @@ export const TeamMembers = ({organization,currentUser,accessControlDashboard,opt
                         {settings.labels.inviteMember}
                 </button>
             }
-            {settings.buttons.ADD_ROLE &&  
-                <button onClick={()=>setShowNewRoleModal(true)} style={{maxWidth:"200px"}} title="Add Role"
-                    type="button" className="btn-new-data-product mr-1 pt-2 pb-2 pr-4 pl-4 btn btn-sm btn btn-info">
-                        {settings.labels.addRole}
-                </button>}
-            {settings.buttons.ADD_USER &&
+            {/*settings.buttons.ADD_USER &&
                 <button onClick={()=>setShowNewUserModal(true)} style={{maxWidth:"200px"}} title="Add Role"
                     type="button" className="btn-new-data-product mr-1 pt-2 pb-2 pr-4 pl-4 btn btn-sm btn btn-info">
                         {settings.labels.addUser}
                 </button>
-            }
+            */}
             </Row>
         <Tabs id="members-tab"
             activeKey={key}
@@ -80,15 +67,25 @@ export const TeamMembers = ({organization,currentUser,accessControlDashboard,opt
                 <Tab eventKey={INVITATION_TAB}   title={<span><RiUserShared2Fill className="mr-1"/>{INVITATION_TAB}</span>}>
                     <InvitationsList options={settings}  team={organization} setShow={showNewMemberModal}  accessControlDashboard={accessControlDashboard}/>
                 </Tab>
-            }
+        }
             {settings.tabs.REQUEST_ACCESS && 
                 <Tab eventKey={"REQUEST_ACCESS"}   title={<span><RiUserShared2Fill className="mr-1"/>{"ASK FOR ACCESS"}</span>}>
                     <AskToJoinList options={settings}  team={organization} setShow={showNewMemberAction}  accessControlDashboard={accessControlDashboard}/>
                 </Tab>
             }
+            { settings.tabs.ORGANIZATION_LIST && 
+                <Tab eventKey={"ORGANIZATION_LIST"}   title={<span><RiUserShared2Fill className="mr-1"/>{"ORGANIZATIONS"}</span>}>
+                    <OrganizationList options={settings}   accessControlDashboard={accessControlDashboard}/>
+                </Tab>
+            }
             {settings.tabs.ALL_USER && 
                 <Tab eventKey={"ALL_USER"}   title={<span><RiUserShared2Fill className="mr-1"/>{"ALL THE USERS"}</span>}>
-                    <AllUserList options={settings}  setShow={showNewUserAction}  accessControlDashboard={accessControlDashboard}/>
+                    <AllUserList options={settings}   accessControlDashboard={accessControlDashboard}/>
+                </Tab>
+            }
+            { settings.tabs.ROLES_LIST && 
+                <Tab eventKey={"ROLES_LIST"}   title={<span><RiUserShared2Fill className="mr-1"/>{"ROLE List"}</span>}>
+                    <RoleListTable options={settings}  accessControlDashboard={accessControlDashboard}/>
                 </Tab>
             }
         </Tabs>

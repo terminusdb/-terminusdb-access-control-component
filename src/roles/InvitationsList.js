@@ -8,7 +8,8 @@ import {RiDeleteBin7Line} from "react-icons/ri"
 
 export const InvitationsList = ({team,setShow,accessControlDashboard}) => {  
     if(!accessControlDashboard)return ""
-    const {getOrgInvitations,orgInvitations,loading,deleteInvitation} =  AccessControlHook(accessControlDashboard.accessControl())
+    
+    const {getOrgInvitations,orgInvitations,loading,deleteInvitation} =  AccessControlHook(accessControlDashboard)
     const orgInvitationsArr = Array.isArray(orgInvitations) ? orgInvitations : []
     const invitesCount = orgInvitationsArr.length 
     useEffect(() => {

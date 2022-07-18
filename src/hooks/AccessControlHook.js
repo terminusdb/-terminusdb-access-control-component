@@ -1,18 +1,25 @@
 import React , { useState } from "react"
+import {UTILS} from "@terminusdb/terminusdb-client"
 
-export const AccessControlHook=(clientAccessControl,options)=> {
-	const [loading,setLoading]=useState(null)
+export const AccessControlHook=(accessControlDashboard,options)=> {
+    //to load the items list
+    const [loading,setLoading]=useState(null)
+    const [errorMessage,setError] =useState(false)
+    const [successMessage,setSuccessMessage] =useState(null)
+ 
     const [orgUsers,setOrgUsers]=useState([])
     const [orgInvitations,setOrgInvitations]=useState([])
-    const [errorMessage,setError] =useState(null)
+    
     //const [invitationSent,setInvitationSent] =useState(null)
     const [userDatabaseList,setUserDatabaseList]=useState(null)
-    const [successMessage,setSuccessMessage] =useState(null)
     const [teamRequestAccessList,setTeamRequestAccessList] =useState([])
-
-    const [usersList,setAllUsers]=useState([])
     
+    //review
+    const [rolesList,setRolesList]=useState(accessControlDashboard.getRolesList())
+    const [resultTable,setResultTable]=useState([])
 
+
+    const clientAccessControl = accessControlDashboard.accessControl()
     const resetInvitation = ()=>{
         setLoading(false)
         setError(false)
@@ -21,8 +28,7 @@ export const AccessControlHook=(clientAccessControl,options)=> {
 
     async function sendInvitation(orgName,emailTo,role){
         const errorMessage = options.hookMessage.sendInvitation.error
-        const successMessage = options.hookMessage.sendInvitation.success
-     
+        const successMessage = options.hookMessage.sendInvitation.success   
         setLoading(true)
         setError(false) 
         setSuccessMessage(false)
@@ -38,14 +44,34 @@ export const AccessControlHook=(clientAccessControl,options)=> {
         
     }
 
+    /*
+    * I can not use the general one because I need in accessControl
+    */
+    async function getRolesList(){
+        setLoading(true)
+        setError(false) 
+        setSuccessMessage(false)
+        const errorMessage = "I can not get the roles list"
+        try{
+            const result = await accessControlDashboard.callGetRolesList()
+            setRolesList (result)
+            if(successMessage)setSuccessMessage(successMessage)
+        }catch(err){
+            setError(errorMessage)
+        }finally{          
+            setLoading(false)
+        }
+    }
+
+
     async function createUserRole(orgName,userid,role,scope){
         setLoading(true)
         setError(false) 
         setSuccessMessage(false)
         const errorMessage = "I can not create the role"
         try{
-            await clientAccessControl.createUserRole(userId, scope, role, orgName)
-            await getUserDatabasesRoles(orgid,userid)
+            await clientAccessControl.createUserRole(userid, scope, role, orgName)
+            await getUserDatabasesRoles(orgName,userid)
             if(successMessage)setSuccessMessage(successMessage)
         }catch(err){
             setError(errorMessage)
@@ -104,6 +130,47 @@ export const AccessControlHook=(clientAccessControl,options)=> {
         }
 
     }
+    
+    function filterCapability (capArr,orgId){
+        let role;
+        let databases= {}
+        capArr.forEach(cap => {
+            if(cap.scope === orgId){
+                role = cap.role
+            }else if(cap.scope.startsWith("UserDatabase")){
+                databases[cap.scope] = cap.role
+            }
+
+        })
+
+        return {role,databases}
+    }
+
+    async function getOrgUsersLocal(orgName,resetUserDatabases=false){
+        setLoading(true)
+		try{
+            const orgId= `Organization/${UTILS.encodeURISegment(orgName)}`
+			const response = await clientAccessControl.getOrgUsers(orgName)
+            const responseFormatted = []
+            response.forEach(element => {
+                const {role , databases} = filterCapability(element["capability"],orgId)
+                const item = {"@id":element["@id"],
+                              "username":element["name"],
+                              role,databases}
+                responseFormatted.push(item)
+            });
+
+            if(resetUserDatabases)setUserDatabaseList(null)
+			setOrgUsers(responseFormatted)         
+            return response
+		}catch(err){
+            console.log(err.message)
+			setError('I can not get the user list')
+		}finally{
+        	setLoading(false)
+        }
+
+    }
 
     async function sendTeamAccessRequest(orgName,email,affiliation,note){
         const errorMessage = "I can not send the invitation"
@@ -114,10 +181,10 @@ export const AccessControlHook=(clientAccessControl,options)=> {
         setSuccessMessage(false)
         try{
             await clientAccessControl.sendAccessRequest(email,affiliation,note,orgName)
+            if(successMessage)setSuccessMessage(successMessage)
         }catch(err){
             setError(errorMessage)
-        }finally{
-            if(successMessage)setSuccessMessage(successMessage)
+        }finally{           
             setLoading(false)
         }
         
@@ -144,7 +211,6 @@ export const AccessControlHook=(clientAccessControl,options)=> {
 			getTeamRequestAccessList(orgName)         
             return response
 		}catch(err){
-            console.log(err.message)
 			setError('I can not delete the access list')
 		}finally{
         	setLoading(false)
@@ -171,87 +237,133 @@ export const AccessControlHook=(clientAccessControl,options)=> {
             await clientAccessControl.deleteOrgInvite(invid,orgName)
 			getOrgInvitations(orgName)
 		}catch(err){
-            const data = err.response
-			setError(data.err)
+           setError(err.message)
 		}finally{
         	setLoading(false)
         }
-
     }
 
-    async function deleteUser(orgName,userid){
+    async function deleteUserFromOrganization(orgName,userid){
         setLoading(true)
 		try{
 			await clientAccessControl.removeUserFromOrg(userid,orgName)
-         	getOrgUsers(orgid)
+            getOrgUsers(orgName)
 		}catch(err){
-            const data = err.response.data
-			setError(data.err)
+            setError(err.message)
 		}finally{
         	setLoading(false)
         }
-
     }
 
-    async function createRole(id,name,actions){
+    async function createRole(name,actions){
         setLoading(true)
+        setError(false)
 		try{
-			await clientAccessControl.createRole(id,name,actions)
-		}catch(err){
-            const data = err.response.data
-			setError(data.err)
-		}finally{
-        	setLoading(false)
-        }
-
-    }
-
-    /*
-    * return all the users in the system database
-    */
-    async function getAllUsers(){
-        setLoading(true)
-		try{
-			//await clientAccessControl.getAllUsers()
-            setAllUsers([{"name":"user01","@id":"User/user01"}])
-		}catch(err){
-            const data = err.response.data
-			setError(data.err)
+			await clientAccessControl.createRole(name,actions)
+            return true
+		}catch(err){    
+			setError(err.message)
+            return false           
 		}finally{
         	setLoading(false)
         }
     }
 
-    async function deleteUser(){
+
+   
+
+
+    
+    async function deleteUserFromSystem(){
         setLoading(true)
 		try{
 			await clientAccessControl.deleteUser()
 		}catch(err){
-            const data = err.response.data
-			setError(data.err)
+            
+			setError(err.message)
 		}finally{
         	setLoading(false)
         }
     }
 
-    async function addUserToTeam(id,name,actions){
+    /*
+    * local database
+    */
+    async function addUserToTeam(teamId,name,password,role){
         setLoading(true)
 		try{
-			const result = await clientAccessControl.createRole(id,name,actions)
-            setAllUsers(result)
+			//const user = await clientAccessControl.addUser(name,password)
+            await clientAccessControl.manageCapability(name, teamId, role, "grant")
 		}catch(err){
-            const data = err.response.data
-			setError(data.err)
+        	setError(err.message)
 		}finally{
         	setLoading(false)
         }
     }
+
+    /*
+    * return all table reuslt list by type
+    */
+     async function getResultTable(methodName){
+        setLoading(true)
+		try{
+			const result = await clientAccessControl[methodName]()
+            setResultTable(result.reverse())
+        }catch(err){
+			setError(err.message)
+		}finally{
+        	setLoading(false)
+        }
+    }
+
+    /*
+    * delete an document by name
+    * the methodName point at the differnt function in accessControl class
+    */
+    async function deleteElementByName(methodName,name){
+        setLoading(true)
+        setError(false)
+        setSuccessMessage(false)
+		try{
+			await clientAccessControl[methodName](name)
+            return true
+		}catch(err){
+			setError(err.message)
+            return false
+		}finally{
+        	setLoading(false)
+        }
+    }
+
+    /*
+    * create a new document
+    */
+    async function createElementByName(methodName,name,extraParam){
+        setLoading(true)
+        setError(false)
+        setSuccessMessage(false)
+		try{
+			await clientAccessControl[methodName](name,extraParam)
+            return true
+		}catch(err){
+            setError(err.message)
+            return false
+		}finally{
+        	setLoading(false)
+        }
+    }
+
+ 
     
-    return {
-            //setEmail,
-            //email,
-            getAllUsers,
-            usersList,
+    return {getOrgUsersLocal,
+            createElementByName,
+            deleteElementByName,
+            getResultTable,
+            resultTable,
+            setError,
+            getRolesList,
+            rolesList,
+            deleteUserFromSystem,
             createRole,
             addUserToTeam,
             teamRequestAccessList,
@@ -264,7 +376,7 @@ export const AccessControlHook=(clientAccessControl,options)=> {
             updateUserRole,
             getUserDatabasesRoles,
             userDatabaseList,
-            deleteUser,
+            deleteUserFromOrganization,
             deleteInvitation,
             resetInvitation,
             orgInvitations,
@@ -276,3 +388,4 @@ export const AccessControlHook=(clientAccessControl,options)=> {
             errorMessage}
 
 }
+
