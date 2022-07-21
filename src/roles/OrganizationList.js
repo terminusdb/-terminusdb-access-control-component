@@ -5,7 +5,7 @@ import {WOQLTable} from '@terminusdb/terminusdb-react-table'
 import {getListConfigBase} from "../ViewConfig"
 import {RiDeleteBin7Line} from "react-icons/ri"
 import {FaUsers} from "react-icons/fa"
-import { DeleteElementModal } from "./DeleteElementModal"
+import { DeleteElementByName } from "./DeleteElementByName"
 import { CreateOrganizationModal } from "./CreateOrganizationModal"
 import {GET_ALL_ORGANIZATIONS,DELETE_ORGANIZATION} from "../utils/default"
 import {MembersListLocal} from "./MembersListLocal"
@@ -65,7 +65,7 @@ export const OrganizationList = ({accessControlDashboard,options}) => {
     
 
     return <React.Fragment>
-        {showDelete && <DeleteElementModal 
+        {showDelete && <DeleteElementByName 
                         updateTable={updateResultTable}
                         accessControlDashboard={accessControlDashboard}
                         showModal={showDelete} 

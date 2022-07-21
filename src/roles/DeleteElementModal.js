@@ -3,24 +3,13 @@ import {Alert, Modal, Button, Form} from "react-bootstrap"
 import {AiOutlineDelete} from "react-icons/ai"
 import {AccessControlHook} from "../hooks/AccessControlHook"
 
-export const DeleteElementModal = ({accessControlDashboard,showModal, setShowModal, elementType, elementName, methodName,updateTable }) => {
+export const DeleteElementModal = ({showModal, setShowModal, elementType, elementName,deleteElement,loading,errorMessage,setError}) => {
     const [id, setID]=useState(false)
     const [disabled, setDisabled]=useState(true)
-   
-    const {deleteElementByName,loading,errorMessage,setError} =  AccessControlHook(accessControlDashboard,{})
-
-    const deleteElement = (name) =>{
-        return deleteElementByName(methodName,name)
-    }
     
     function handleClick () {
         if(disabled) return;
-        deleteElement(id).then(done=>{
-            if(done){
-                updateTable()
-                setShowModal(false)
-            }
-        })
+        deleteElement(id)
     }
     
     function handleOnChange (e) {

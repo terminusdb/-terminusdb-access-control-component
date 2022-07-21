@@ -49,17 +49,15 @@ export const getRoleListConfig = (limit,getActionButtons) => {
 }
 
 
-export const getUsersListConfig = (limit,getActionButtons,getPicture) => {
+export const getUsersListConfig = (limit,getActionButtons,getPicture,formatRoles) => {
     const tabConfig= TerminusClient.View.table();
     tabConfig.column_order("picture", "username", "role","actions")
     tabConfig.column("user")
     tabConfig.column("picture").header(" ")
     tabConfig.column("username")
-    tabConfig.column("role")
-    tabConfig.column("actions")
+    tabConfig.column("role").render(formatRoles)
     tabConfig.column("picture").render(getPicture)
     tabConfig.column("actions").render(getActionButtons)
-    
     tabConfig.pager("local")
     tabConfig.pagesize(limit)
     return tabConfig

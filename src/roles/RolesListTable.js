@@ -4,7 +4,7 @@ import {AccessControlHook} from "../hooks/AccessControlHook"
 import {WOQLTable} from '@terminusdb/terminusdb-react-table'
 import {getListConfigBase} from "../ViewConfig"
 import {RiDeleteBin7Line} from "react-icons/ri"
-import { DeleteElementModal } from "./DeleteElementModal"
+import { DeleteElementByName } from "./DeleteElementByName"
 import { CreateRoleModal } from "./CreateRoleModal"
 import {DELETE_ROLE} from "../utils/default"
 
@@ -54,7 +54,7 @@ export const RoleListTable = ({accessControlDashboard,options}) => {
     
 
     return <React.Fragment>
-        {showDelete && <DeleteElementModal 
+        {showDelete && <DeleteElementByName 
                         updateTable={getRolesList}
                         accessControlDashboard={accessControlDashboard}
                         showModal={showDelete} 

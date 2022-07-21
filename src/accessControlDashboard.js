@@ -23,52 +23,52 @@ export const AccessControlDashboard = (clientAccessControl)=>{
             }
     }
 
-    /*function createNewOrganization(orgName){
-        return __clientAccessControl.createOrganization(orgName)
-    }
-
-    function createNewRole(roleId, label, actionsArr){
-        if(__clientAccessControl.createRole){
-            return __clientAccessControl.createRole(roleId, label, actionsArr)
-        }else{
-            throw new Error("this api is not implemented in TerminusX")
-        }
-    }*/
-
 
     //this is will be a different call 
     // I have to override this 
-    async function callGetUserTeamRole(orgName){
+    async function callGetUserTeamRole(userName,orgName){
 		try{
-			const teamRole = await __clientAccessControl.getTeamUserRole(orgName)
-            setTeamActions(teamRole.userRole)
+			const result = await __clientAccessControl.getTeamUserRoles(userName,orgName)
+            let teamRoles = result.capability.length ===1 ?  result.capability[0].role : []
+            // review with database capability 
+            // before we have to fix team
+            if(result.capability.length >1 ){
+                const cap = result.capability.find(item=>{item.scope === "orgName"})
+                teamRoles = cap.role
+            }            
+            setTeamActions(teamRoles)
 		}catch(err){
-			console.log(err.message)
+            if(err.data && err.status === 404){
+                throw new Error(err.data["api:message"])
+            }
+            throw err
 		}
-
     }
 
     function accessControl(){
         return __clientAccessControl
     }
     
-    const formatActionsRoles = (role)=> {
+    // if I got the role expanded is better
+    const formatActionsRoles = (userRoles)=> {
         if(!Array.isArray(__rolesList)) return {}
-        const actions = __rolesList.find(element => element["@id"] === role);
-        if(actions && Array.isArray(actions['action'])){
-            return actions['action'].reduce(function(object, value) {
-                object[value] = value;
-                return object;
-            }, {});
-        }
-        return {}
+        const actionsObj = {}
+        userRoles.forEach(role => {
+            const actions = __rolesList.find(element => element["@id"] === role);
+            if(actions && Array.isArray(actions['action'])){
+                actions['action'].forEach(roleId =>{
+                    actionsObj[roleId] = roleId;
+                }, {});
+            }          
+        });
+        return actionsObj
     }
 
-    const setTeamActions = (teamRole,dbUserRole) =>{
+    const setTeamActions = (teamRoles,dbUserRole) =>{
        // const database = databaseRoles.find(element => element["name"]["@value"] === dataproduct);
         //const role = database ? database['role'] : teamRole
-        __teamUserRole = teamRole
-        __teamUserActions =  formatActionsRoles(teamRole) 
+        __teamUserRole = teamRoles
+        __teamUserActions =  formatActionsRoles(teamRoles) 
         __userDBRoles = dbUserRole
         //if change the team I reset the __dbUserActions === at the teamActions
         __dbUserActions = null

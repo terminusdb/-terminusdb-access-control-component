@@ -12,15 +12,14 @@ export const defaultSetting ={
         INVITATION_TAB:false,
         REQUEST_ACCESS:false,
         
-        ALL_USER:true,
-        ROLES_LIST:true,
-        ORGANIZATION_LIST:true
+        ALL_USER:false,
+        ROLES_LIST:false,
+        ORGANIZATION_LIST:false
     },
     buttons:{
         ADD_USER:true,
         ADD_INVITATION:false,
-        ADD_ROLE:true,
-       
+        ADD_ROLE:true,  
     },
     hookMessage:{
         sendInvitation:{

@@ -6,7 +6,7 @@ import {getListConfigBase} from "../ViewConfig"
 import {RiDeleteBin7Line} from "react-icons/ri"
 import {AiOutlineUserAdd} from "react-icons/ai"
 import { GET_ALL_USERS, DELETE_USER } from "../utils/default"
-import { DeleteElementModal } from "./DeleteElementModal"
+import { DeleteElementByName } from "./DeleteElementByName"
 import { CreateUserModal } from "./CreateUserModal"
 import {AddUserCapabilityModal} from "./AddUserCapabilityModal"
 
@@ -51,12 +51,16 @@ export const AllUserList = ({accessControlDashboard,options}) => {
             <Button variant="danger" size="sm" className="ml-5" title={`delete - name`} onClick={() => deleteAction(cell.row.original)}>
                 <RiDeleteBin7Line/> 
             </Button>
-            <Button variant="success" size="sm" className="ml-5" title={`add - name`} onClick={() => userToUpdate(cell.row.original)}>
-                <AiOutlineUserAdd/> 
-            </Button>
+          
         </span></React.Fragment>
         
     }
+
+    /*
+      <Button variant="success" size="sm" className="ml-5" title={`add - name`} onClick={() => userToUpdate(cell.row.original)}>
+                <AiOutlineUserAdd/> 
+            </Button>
+    */
     const tableConfig = getListConfigBase(10, getActionButtons)
 
     if(loading){
@@ -70,7 +74,7 @@ export const AllUserList = ({accessControlDashboard,options}) => {
 
    
     return <React.Fragment>
-        {showDelete && <DeleteElementModal 
+        {showDelete && <DeleteElementByName 
                         updateTable={updateResultTable}
                         accessControlDashboard={accessControlDashboard}
                         showModal={showDelete} 

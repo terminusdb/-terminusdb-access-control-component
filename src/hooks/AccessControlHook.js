@@ -101,10 +101,13 @@ export const AccessControlHook=(accessControlDashboard,options)=> {
     //I can move this in the main context I don't need to call it every time
     //it get the list of roles document
 
-    async function getUserDatabasesRoles(orgName,userid){
+    async function getUserDatabasesRoles(orgName,userid,resultFormatter){
         setLoading(true)
 		try{
-		    const response = await clientAccessControl.getDatabaseRolesOfUser(userid,orgName)
+		    let response = await clientAccessControl.getDatabaseRolesOfUser(userid,orgName)
+            if(resultFormatter){
+                response = resultFormatter(response)
+            }
 			setUserDatabaseList(response)
             return response
 		}catch(err){
@@ -156,7 +159,7 @@ export const AccessControlHook=(accessControlDashboard,options)=> {
                 const {role , databases} = filterCapability(element["capability"],orgId)
                 const item = {"@id":element["@id"],
                               "username":element["name"],
-                              role,databases}
+                              role,databases,scope:orgId}
                 responseFormatted.push(item)
             });
 
@@ -169,8 +172,8 @@ export const AccessControlHook=(accessControlDashboard,options)=> {
 		}finally{
         	setLoading(false)
         }
-
     }
+
 
     async function sendTeamAccessRequest(orgName,email,affiliation,note){
         const errorMessage = "I can not send the invitation"
@@ -269,33 +272,18 @@ export const AccessControlHook=(accessControlDashboard,options)=> {
         }
     }
 
-
-   
-
-
-    
-    async function deleteUserFromSystem(){
-        setLoading(true)
-		try{
-			await clientAccessControl.deleteUser()
-		}catch(err){
-            
-			setError(err.message)
-		}finally{
-        	setLoading(false)
-        }
-    }
-
     /*
     * local database
     */
-    async function addUserToTeam(teamId,name,password,role){
+    async function manageCapability(teamId,operation,roles, username,password){
         setLoading(true)
 		try{
 			//const user = await clientAccessControl.addUser(name,password)
-            await clientAccessControl.manageCapability(name, teamId, role, "grant")
+            await clientAccessControl.manageCapability(username, teamId, roles,operation)
+            return true
 		}catch(err){
         	setError(err.message)
+            return false
 		}finally{
         	setLoading(false)
         }
@@ -303,11 +291,15 @@ export const AccessControlHook=(accessControlDashboard,options)=> {
 
     /*
     * return all table reuslt list by type
+    * I use the filter function to format or remove item from the result
     */
-     async function getResultTable(methodName){
+     async function getResultTable(methodName,filterFunction){
         setLoading(true)
 		try{
-			const result = await clientAccessControl[methodName]()
+			let result = await clientAccessControl[methodName]()
+            if(filterFunction){
+                result = filterFunction(result)
+            }
             setResultTable(result.reverse())
         }catch(err){
 			setError(err.message)
@@ -352,8 +344,6 @@ export const AccessControlHook=(accessControlDashboard,options)=> {
         	setLoading(false)
         }
     }
-
- 
     
     return {getOrgUsersLocal,
             createElementByName,
@@ -363,9 +353,8 @@ export const AccessControlHook=(accessControlDashboard,options)=> {
             setError,
             getRolesList,
             rolesList,
-            deleteUserFromSystem,
             createRole,
-            addUserToTeam,
+            manageCapability,
             teamRequestAccessList,
             sendTeamAccessRequest,
             deleteTeamRequestAccess,
