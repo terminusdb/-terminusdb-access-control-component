@@ -1,6 +1,6 @@
 {
   "name": "@terminusdb/terminusdb-access-control-component",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Table for terminusdb",
   "main": "src/index",
   "module": "es6/index",
