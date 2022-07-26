@@ -9,19 +9,27 @@ import {getUsersListConfig,getUsersDatabaseListConfig} from "../ViewConfig"
 import {AccessControlHook} from "../hooks/AccessControlHook"
 import {RoleListModal} from "./RoleList"
 import {formatCell} from "./formatData"
-import {UserDatabasesList} from "./UserDatabasesList"
+import {UserDatabasesListLocal} from "./UserDatabasesListLocal"
+import { RevokeCapability } from "./RevokeCapability"
+import { AddUserCapabilityModal } from "./AddUserCapabilityModal"
 
-export const MembersList = ({team,currentUser,accessControlDashboard,options}) => {  
+export const MembersListLocal = ({organizationInfo,currentUser,accessControlDashboard,options}) => {  
     if(!accessControlDashboard)return ""
 
     const [selectTeamRow,setSelectTeamRow]=useState(null)
     const [currentRoleToUpdate,setCurrentRoleToUpdate]=useState(null)
+
+    const [showDelete, setShowDelete] = useState(false)
+    const [showAdd, setShowAdd] = useState(false)
+
     const [show, setShow] = useState(false)
     const roles = accessControlDashboard.getRolesList()
 
     const localUser = currentUser || {}
- 
-    const {deleteUserFromOrganization,getOrgUsers,orgUsers,createUserRole,
+    const team = organizationInfo.name 
+    const teamId = organizationInfo["@id"] 
+
+    const {getOrgUsersLocal,orgUsers,createUserRole,
           updateUserRole,
           loading,
           errorMessage,
@@ -29,8 +37,12 @@ export const MembersList = ({team,currentUser,accessControlDashboard,options}) =
     
     //to be review the roles list doesn't change
     useEffect(() => {
-        getOrgUsers(team,true)
+        updateTable()
     }, [team])
+
+    const updateTable =()=>{
+        getOrgUsersLocal(team,true)
+    }
 
     const orgUserArr = Array.isArray(orgUsers) ? orgUsers : []
     let rowCount=orgUserArr.length  
@@ -39,6 +51,10 @@ export const MembersList = ({team,currentUser,accessControlDashboard,options}) =
     const changeUserRoleForScope= (currentSelected)=>{
         setCurrentRoleToUpdate(currentSelected)
         setShow(true)
+    }
+
+    const revokePermission =()=>{
+        
     }
 
     // maybe move in hook
@@ -59,9 +75,9 @@ export const MembersList = ({team,currentUser,accessControlDashboard,options}) =
         }
     }
 
-    const deleteUserItem = (userId)=>{
-        deleteUserFromOrganization(team,userId)
-        setSelectTeamRow(null)
+    const deleteUserItem = (selectedRow)=>{
+        setSelectTeamRow(selectedRow)
+        setShowDelete(true)
     }
     
     //when I get the database list I save the user selected in the table
@@ -71,20 +87,15 @@ export const MembersList = ({team,currentUser,accessControlDashboard,options}) =
     
     //maybe an utilityfunction woqlClient
     function getActionButtons (cell) {       
-        const currentSelected = formatCell(cell,"TEAM" , team)
-        if(!accessControlDashboard.isAdmin() || currentSelected.email === localUser.email )return <span className="d-flex"></span>
+        const currentSelected = cell.row.original//formatCell(cell,"TEAM" , team)
+       // if(!accessControlDashboard.isAdmin() || currentSelected.email === localUser.email )return <span className="d-flex"></span>
         return <span className="d-flex">          
             {options.interface.memberList.showDatabase && 
             <Button variant="success" size="sm"   title={`show user dataproducts role`} onClick={() => getUserDatabaseList(currentSelected)}>
                 <AiOutlineDatabase/> 
             </Button>}
-            {options.interface.memberList.changeRole && 
-                <Button variant="success" size="sm"  className="ml-2" title={`change user roles`} onClick={() => changeUserRoleForScope(currentSelected)}>
-                    <GrUserAdmin/> 
-                </Button>
-            }
             {options.interface.memberList.delete &&      
-                <Button variant="danger" size="sm" className="ml-5" title={`delete ${currentSelected.email}`} onClick={() => deleteUserItem(currentSelected['userid'])}>              
+                <Button variant="danger" size="sm" className="ml-5" title={`delete ${currentSelected.username}`} onClick={() => deleteUserItem(currentSelected)}>              
                     <RiDeleteBin7Line/> 
                 </Button>
             }
@@ -100,13 +111,20 @@ export const MembersList = ({team,currentUser,accessControlDashboard,options}) =
                     width="50"/>
     }
 
+    function formatRoles (cell) {
+        const rolesList = cell.row.original["role"]
+     
+        return rolesList.map(item=><p>{item}</p>
+        )
+    }
+
     const propsObj = {show, setShow, team:team,loading,
         clickButton:changeUserRole,
         errorMessage,
         successMessage}
     
     
-    const tableConfig = getUsersListConfig(10, getActionButtons,getPicture)
+    const tableConfig = getUsersListConfig(10, getActionButtons,getPicture,formatRoles)
     
     if(loading){
         return  <Row className="mr-5 ml-2">
@@ -120,13 +138,35 @@ export const MembersList = ({team,currentUser,accessControlDashboard,options}) =
         {currentRoleToUpdate && show && 
             <RoleListModal rolesList={roles} {...currentRoleToUpdate} {...propsObj}   title={`Change the user role for the ${currentRoleToUpdate.name} ${currentRoleToUpdate.type}`}/>
         }
+        {showDelete && <RevokeCapability showModal={showDelete} setShowModal={setShowDelete} updateTable={updateTable} selectedRow={selectTeamRow} accessControlDashboard={accessControlDashboard}/>}
+        {showAdd && <AddUserCapabilityModal
+                         showModal={showAdd} 
+                         setShowModal={setShowAdd}
+                         accessControlDashboard={accessControlDashboard} 
+                         options={options} 
+                         updateTable={updateTable}
+                         teamId={teamId}
+                         //defaultName={rowSelected.name}
+                         //rowSelected ={rowSelected}
+                         team = {team}
+                        />}
         <Row className="mr-5 ml-2">
-            <Card className="shadow-sm m-4">
-                <Card.Header className=" d-flex justify-content-between bg-transparent">
-                    <h6 className="mb-0 mt-1 float-left w-100 text-muted">Total Members
-                        <Badge variant="info" className="text-dark ml-3">{rowCount}</Badge>
-                    </h6>
-
+            <Card className="shadow-sm m-4">                
+                    <h4 className="mt-3 mb-2 mr-4"><strong className="text-success">{team}</strong> -- Organization Users Roles</h4> 
+                <Card.Header className="bg-transparent">                                  
+                <Row>
+                    <Col>
+                        <h6 className="mb-0 mt-1 float-left text-muted">Total Items
+                            <Badge variant="info" className="text-dark ml-3">{rowCount }</Badge>
+                        </h6>
+                    </Col>
+                    <Col >
+                            <button onClick={()=>setShowAdd(true)} style={{maxWidth:"200px"}} title="Create New Role"
+                                    type="button" className="btn-new-data-product mr-1 pt-2 pb-2 pr-4 pl-4 btn btn-sm btn btn-info">
+                                       Add User to {team} Organization
+                             </button>
+                    </Col>
+                    </Row>
                 </Card.Header>
                 <Card.Body>
                     <WOQLTable
@@ -142,7 +182,7 @@ export const MembersList = ({team,currentUser,accessControlDashboard,options}) =
                     />
                 </Card.Body>
                 </Card>
-                {selectTeamRow && <UserDatabasesList team={team} selectedUser={selectTeamRow} accessControlDashboard={accessControlDashboard}/>}
+                {selectTeamRow && <UserDatabasesListLocal team={team} selectedUser={selectTeamRow} accessControlDashboard={accessControlDashboard}/>}
                    
         </Row>
     </React.Fragment>

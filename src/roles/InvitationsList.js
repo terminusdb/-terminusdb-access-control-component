@@ -1,6 +1,6 @@
 import React, {useEffect} from "react"
 import {Row, Badge, Col, Card,Button} from "react-bootstrap"
-import {InvitationHook} from "../hooks/InvitationHook"
+import {AccessControlHook} from "../hooks/AccessControlHook"
 import {WOQLTable} from '@terminusdb/terminusdb-react-table'
 import {getInvitationListConfig} from "../ViewConfig"
 import {RiDeleteBin7Line} from "react-icons/ri"
@@ -8,7 +8,8 @@ import {RiDeleteBin7Line} from "react-icons/ri"
 
 export const InvitationsList = ({team,setShow,accessControlDashboard}) => {  
     if(!accessControlDashboard)return ""
-    const {getOrgInvitations,orgInvitations,loading,deleteInvitation} =  InvitationHook(accessControlDashboard.accessControl())
+    
+    const {getOrgInvitations,orgInvitations,loading,deleteInvitation} =  AccessControlHook(accessControlDashboard)
     const orgInvitationsArr = Array.isArray(orgInvitations) ? orgInvitations : []
     const invitesCount = orgInvitationsArr.length 
     useEffect(() => {

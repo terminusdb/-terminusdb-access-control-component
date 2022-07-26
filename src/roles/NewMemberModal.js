@@ -1,7 +1,7 @@
 import React, {useState, useRef, useEffect} from "react"
 import {Form} from "react-bootstrap"
 import {BiError} from "react-icons/bi"
-import {InvitationHook} from "../hooks/InvitationHook"
+import {AccessControlHook} from "../hooks/AccessControlHook"
 
 import { RoleListModal } from "./RoleList"
 
@@ -11,7 +11,7 @@ export const NewMemberModal = ({show, setShow, team, accessControlDashboard,opti
           successMessage,
           loading,
           resetInvitation,
-          errorMessage} =  InvitationHook(accessControlDashboard.accessControl(),options)
+          errorMessage} =  AccessControlHook(accessControlDashboard,options)
     const [error, setError]=useState(false)
 
     const emailInput = useRef(null);

@@ -9,46 +9,100 @@ export const AccessControlDashboard = (clientAccessControl)=>{
     let __clientAccessControl = clientAccessControl
     //let __currentUser = 
 
-    async function callGetRolesList(){
+    async function callGetRolesList(roleRemoveFilter){
             try{
                const list = await __clientAccessControl.getAccessRoles()
                __rolesList= list
+               if(roleRemoveFilter){
+                     __rolesList = list.filter(item => !roleRemoveFilter[item["@id"]])
+               }
+              
+               return __rolesList
             }catch(err){
-                console.log('I can not get the role list')
+                console.log('I can not get the role list',err)
             }
     }
-    //this is will be a different call 
-    async function callGetUserTeamRole(orgName,userEmail){
-		try{
-			const teamRole = await __clientAccessControl.getTeamUserRole(orgName)
-            setTeamActions(teamRole.userRole)
-		}catch(err){
-			console.log(err.message)
-		}
 
+   /* const testData = {
+        "@id":"User/admin",
+        "capability": [
+          {
+            "@id":"Capability/server_access",
+            "@type":"Capability",
+            "role": [{
+                "@id":"Role/admin",
+                "@type":"Role",
+                "action": [
+                  "branch",
+                  "class_frame",
+                  "clone",
+                  "commit_read_access",
+                  "commit_write_access",
+                  "create_database",
+                  "delete_database",
+                  "fetch",
+                  "instance_read_access",
+                  "instance_write_access",
+                  "manage_capabilities",
+                  "meta_read_access",
+                  "meta_write_access",
+                  "push",
+                  "rebase",
+                  "schema_read_access",
+                  "schema_write_access"
+                ],
+                "name":"Admin Role"
+              }],
+            "scope":"Organization/admin"
+          }
+        ],
+        "name":"admin"
+      }*/
+
+    //this is will be a different call 
+    // I have to override this 
+    async function callGetUserTeamRole(userName,orgName){
+		try{
+			const result = await __clientAccessControl.getTeamUserRoles(userName,orgName)
+            let teamRoles = result.capability.length ===1 ?  result.capability[0].role : []
+            // review with database capability 
+            // before we have to fix team
+            if(result.capability.length >1 ){
+                const cap = result.capability.find(item=>{item.scope === orgName})
+                teamRoles = cap.role
+            }            
+            setTeamActions(teamRoles)
+		}catch(err){
+            if(err.data && err.status === 404){
+                throw new Error(err.data["api:message"])
+            }
+            throw err
+		}
     }
 
     function accessControl(){
         return __clientAccessControl
     }
     
-    const formatActionsRoles = (role)=> {
+    // if I got the role expanded is better
+    const formatActionsRoles = (userRoles)=> {
         if(!Array.isArray(__rolesList)) return {}
-        const actions = __rolesList.find(element => element["@id"] === role);
-        if(actions && Array.isArray(actions['action'])){
-            return actions['action'].reduce(function(object, value) {
-                object[value] = value;
-                return object;
-            }, {});
-        }
-        return {}
+        const actionsObj = {}
+        userRoles.forEach(role => {          
+            if(role.action && Array.isArray(role.action)){
+                role.action.forEach(roleId =>{
+                    actionsObj[roleId] = roleId;
+                }, {});
+            }          
+        });
+        return actionsObj
     }
 
-    const setTeamActions = (teamRole,dbUserRole) =>{
+    const setTeamActions = (teamRoles,dbUserRole) =>{
        // const database = databaseRoles.find(element => element["name"]["@value"] === dataproduct);
         //const role = database ? database['role'] : teamRole
-        __teamUserRole = teamRole
-        __teamUserActions =  formatActionsRoles(teamRole) 
+        __teamUserRole = teamRoles
+        __teamUserActions =  formatActionsRoles(teamRoles) 
         __userDBRoles = dbUserRole
         //if change the team I reset the __dbUserActions === at the teamActions
         __dbUserActions = null

@@ -1,29 +1,24 @@
 import React, {useEffect} from "react"
 import {Row, Badge, Col, Card,Button} from "react-bootstrap"
-import {InvitationHook} from "../hooks/InvitationHook"
+import {AccessControlHook} from "../hooks/AccessControlHook"
 import {WOQLTable} from '@terminusdb/terminusdb-react-table'
 import {getAskAccessListConfig} from "../ViewConfig"
 import {RiDeleteBin7Line} from "react-icons/ri"
 import {AiOutlineUserAdd} from "react-icons/ai"
-import  {formatCell} from "./formatData"
 //import {PROGRESS_BAR_COMPONENT} from "../constants"
 
 export const AskToJoinList = ({team,setShow,accessControlDashboard,options}) => {  
     if(!accessControlDashboard) return ""
     const {deleteTeamRequestAccess,loading,
-        getTeamRequestAccessList,teamRequestAccessList,
-        sendInvitation} =  InvitationHook(accessControlDashboard.accessControl(),options)
+        getTeamRequestAccessList,teamRequestAccessList} =  AccessControlHook(accessControlDashboard,options)
     
     const teamRequestAccessListArr = Array.isArray(teamRequestAccessList) ? teamRequestAccessList : []
     const invitesCount = teamRequestAccessListArr.length 
-
+    
     useEffect(() => {
         getTeamRequestAccessList(team)
     }, [team])
 
-    const deleteInvitationItem = (invID)=>{
-        deleteInvitation(team,invID)
-    }
 
     function getDeleteButton (cell) {
         const invFullId = cell.row.original['@id']
@@ -40,39 +35,6 @@ export const AskToJoinList = ({team,setShow,accessControlDashboard,options}) => 
         
     }
     const tableConfig = getAskAccessListConfig(10, getDeleteButton)
-    
-    const InvitationList = ({searchInvitation}) => {
-        let invites=[]
-        orgInvitationsArr.map((item)=> {
-
-            if(searchInvitation && (!item.email.toUpperCase().includes(searchInvitation.toUpperCase()))) {
-                return false
-            }
-            var color
-
-            const invFullId =  item['@id']
-            const invId = invFullId.substr(invFullId.lastIndexOf("/")+1)
-            //"Organization/collar_team/invitations/Invitation/b1dc905a8e64371c37c11db84d30790a42c0ab1b097abf3b16fca81a2c2c54e4"
-            if(item.status == "pending") color="warning"
-            else if (item.status == "rejected") color="danger"
-            else if (item.status == "inactive") color="muted"
-
-            invites.push(<Row key={`member_${invId}`} className="mb-3">
-                <Col md={6} className="d-flex">
-                    {item.email_to}
-                </Col>
-                <Col md={4}>
-                    <span className={`text-${color}`}>
-                        {item.status}
-                    </span>
-                </Col>
-                <Col md={2}>
-                    <button id={invId}  onClick={deleteInvitationItem} className="tdb__button__base tdb__panel__button tdb__panel__button--red fas fa-trash-alt"></button>                   
-                </Col>
-            </Row>)
-        })
-        return invites
-    }
 
     if(loading){
         return  <Row className="mr-5 ml-2">

@@ -26,18 +26,38 @@ export const getAskAccessListConfig = (limit,getDeleteButton) => {
     return tabConfig
 }
 
-
-export const getUsersListConfig = (limit,getActionButtons,getPicture) => {
+export const getListConfigBase = (limit,getActionButtons) => {
     const tabConfig= TerminusClient.View.table();
-    tabConfig.column_order("picture", "email", "role","actions")
+    tabConfig.column_order("name","actions")
+    tabConfig.column("name").header("Name")
+    tabConfig.column("actions").header(" ")
+    tabConfig.column("actions").render(getActionButtons)
+    tabConfig.pager("local")
+    tabConfig.pagesize(limit)
+    return tabConfig
+}
+
+export const getRoleListConfig = (limit,getActionButtons) => {
+    const tabConfig= TerminusClient.View.table();
+    tabConfig.column_order("name","actions")
+    tabConfig.column("name").header("Role Name")
+    tabConfig.column("actions").header(" ")
+    tabConfig.column("actions").render(getActionButtons)
+    tabConfig.pager("local")
+    tabConfig.pagesize(limit)
+    return tabConfig
+}
+
+
+export const getUsersListConfig = (limit,getActionButtons,getPicture,formatRoles) => {
+    const tabConfig= TerminusClient.View.table();
+    tabConfig.column_order("picture", "username", "role","actions")
     tabConfig.column("user")
     tabConfig.column("picture").header(" ")
-    tabConfig.column("email")
-    tabConfig.column("role")
-    tabConfig.column("actions")
+    tabConfig.column("username")
+    tabConfig.column("role").render(formatRoles)
     tabConfig.column("picture").render(getPicture)
     tabConfig.column("actions").render(getActionButtons)
-    
     tabConfig.pager("local")
     tabConfig.pagesize(limit)
     return tabConfig
