@@ -9,13 +9,14 @@ import { RoleListModal } from "./RoleList"
 export const AddUserCapabilityModal = ({showModal, setShowModal, team, teamId, accessControlDashboard,options,updateTable}) => {
     if(!accessControlDashboard) return ""
     const {successMessage,
-            manageCapability,
+            manageCapability,getRolesList,rolesList,
             resultTable, getResultTable,
           loading,
           errorMessage} =  AccessControlHook(accessControlDashboard,options)
     const [error, setError]=useState(false)
 
     useEffect(() => {
+        if(rolesList.length===0)getRolesList()
         updateResultTable()
     }, [])
 
@@ -27,7 +28,7 @@ export const AddUserCapabilityModal = ({showModal, setShowModal, team, teamId, a
     const password = useRef(null);
     const userName = useRef(null)
 
-    const roles = accessControlDashboard.getRolesList()
+    const roles = rolesList//accessControlDashboard.getRolesList()
 //teamId,operation,roles, username,password
     function addUser(role){
         const userId = userName.current.value

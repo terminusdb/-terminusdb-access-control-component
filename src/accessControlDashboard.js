@@ -23,6 +23,41 @@ export const AccessControlDashboard = (clientAccessControl)=>{
             }
     }
 
+   /* const testData = {
+        "@id":"User/admin",
+        "capability": [
+          {
+            "@id":"Capability/server_access",
+            "@type":"Capability",
+            "role": [{
+                "@id":"Role/admin",
+                "@type":"Role",
+                "action": [
+                  "branch",
+                  "class_frame",
+                  "clone",
+                  "commit_read_access",
+                  "commit_write_access",
+                  "create_database",
+                  "delete_database",
+                  "fetch",
+                  "instance_read_access",
+                  "instance_write_access",
+                  "manage_capabilities",
+                  "meta_read_access",
+                  "meta_write_access",
+                  "push",
+                  "rebase",
+                  "schema_read_access",
+                  "schema_write_access"
+                ],
+                "name":"Admin Role"
+              }],
+            "scope":"Organization/admin"
+          }
+        ],
+        "name":"admin"
+      }*/
 
     //this is will be a different call 
     // I have to override this 
@@ -33,7 +68,7 @@ export const AccessControlDashboard = (clientAccessControl)=>{
             // review with database capability 
             // before we have to fix team
             if(result.capability.length >1 ){
-                const cap = result.capability.find(item=>{item.scope === "orgName"})
+                const cap = result.capability.find(item=>{item.scope === orgName})
                 teamRoles = cap.role
             }            
             setTeamActions(teamRoles)
@@ -53,10 +88,9 @@ export const AccessControlDashboard = (clientAccessControl)=>{
     const formatActionsRoles = (userRoles)=> {
         if(!Array.isArray(__rolesList)) return {}
         const actionsObj = {}
-        userRoles.forEach(role => {
-            const actions = __rolesList.find(element => element["@id"] === role);
-            if(actions && Array.isArray(actions['action'])){
-                actions['action'].forEach(roleId =>{
+        userRoles.forEach(role => {          
+            if(role.action && Array.isArray(role.action)){
+                role.action.forEach(roleId =>{
                     actionsObj[roleId] = roleId;
                 }, {});
             }          

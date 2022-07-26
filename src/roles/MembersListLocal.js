@@ -9,7 +9,7 @@ import {getUsersListConfig,getUsersDatabaseListConfig} from "../ViewConfig"
 import {AccessControlHook} from "../hooks/AccessControlHook"
 import {RoleListModal} from "./RoleList"
 import {formatCell} from "./formatData"
-import {UserDatabasesList} from "./UserDatabasesList"
+import {UserDatabasesListLocal} from "./UserDatabasesListLocal"
 import { RevokeCapability } from "./RevokeCapability"
 import { AddUserCapabilityModal } from "./AddUserCapabilityModal"
 
@@ -29,7 +29,7 @@ export const MembersListLocal = ({organizationInfo,currentUser,accessControlDash
     const team = organizationInfo.name 
     const teamId = organizationInfo["@id"] 
 
-    const {manageCapability,getOrgUsersLocal,orgUsers,createUserRole,
+    const {getOrgUsersLocal,orgUsers,createUserRole,
           updateUserRole,
           loading,
           errorMessage,
@@ -94,11 +94,6 @@ export const MembersListLocal = ({organizationInfo,currentUser,accessControlDash
             <Button variant="success" size="sm"   title={`show user dataproducts role`} onClick={() => getUserDatabaseList(currentSelected)}>
                 <AiOutlineDatabase/> 
             </Button>}
-            {options.interface.memberList.changeRole && 
-                <Button variant="success" size="sm"  className="ml-2" title={`change user roles`} onClick={() => changeUserRoleForScope(currentSelected)}>
-                    <GrUserAdmin/> 
-                </Button>
-            }
             {options.interface.memberList.delete &&      
                 <Button variant="danger" size="sm" className="ml-5" title={`delete ${currentSelected.username}`} onClick={() => deleteUserItem(currentSelected)}>              
                     <RiDeleteBin7Line/> 
@@ -160,17 +155,17 @@ export const MembersListLocal = ({organizationInfo,currentUser,accessControlDash
                     <h4 className="mt-3 mb-2 mr-4"><strong className="text-success">{team}</strong> -- Organization Users Roles</h4> 
                 <Card.Header className="bg-transparent">                                  
                 <Row>
-                        <Col>
-                            <h6 className="mb-0 mt-1 float-left text-muted">Total Items
-                                <Badge variant="info" className="text-dark ml-3">{rowCount }</Badge>
-                            </h6>
-                        </Col>
-                        <Col >
+                    <Col>
+                        <h6 className="mb-0 mt-1 float-left text-muted">Total Items
+                            <Badge variant="info" className="text-dark ml-3">{rowCount }</Badge>
+                        </h6>
+                    </Col>
+                    <Col >
                             <button onClick={()=>setShowAdd(true)} style={{maxWidth:"200px"}} title="Create New Role"
                                     type="button" className="btn-new-data-product mr-1 pt-2 pb-2 pr-4 pl-4 btn btn-sm btn btn-info">
-                                       Add User
-                            </button>
-                        </Col>
+                                       Add User to {team} Organization
+                             </button>
+                    </Col>
                     </Row>
                 </Card.Header>
                 <Card.Body>
@@ -187,7 +182,7 @@ export const MembersListLocal = ({organizationInfo,currentUser,accessControlDash
                     />
                 </Card.Body>
                 </Card>
-                {selectTeamRow && <UserDatabasesList team={team} selectedUser={selectTeamRow} accessControlDashboard={accessControlDashboard}/>}
+                {selectTeamRow && <UserDatabasesListLocal team={team} selectedUser={selectTeamRow} accessControlDashboard={accessControlDashboard}/>}
                    
         </Row>
     </React.Fragment>
