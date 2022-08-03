@@ -2,7 +2,7 @@
 export const AccessControlDashboard = (clientAccessControl)=>{
 
     let __rolesList = []
-    let __teamUserRole = null
+    let __teamUserRoles = null // an array of roles
     let __teamUserActions = null
     let __userDBRoles = null
     let __dbUserActions = null
@@ -23,42 +23,6 @@ export const AccessControlDashboard = (clientAccessControl)=>{
             }
     }
 
-   /* const testData = {
-        "@id":"User/admin",
-        "capability": [
-          {
-            "@id":"Capability/server_access",
-            "@type":"Capability",
-            "role": [{
-                "@id":"Role/admin",
-                "@type":"Role",
-                "action": [
-                  "branch",
-                  "class_frame",
-                  "clone",
-                  "commit_read_access",
-                  "commit_write_access",
-                  "create_database",
-                  "delete_database",
-                  "fetch",
-                  "instance_read_access",
-                  "instance_write_access",
-                  "manage_capabilities",
-                  "meta_read_access",
-                  "meta_write_access",
-                  "push",
-                  "rebase",
-                  "schema_read_access",
-                  "schema_write_access"
-                ],
-                "name":"Admin Role"
-              }],
-            "scope":"Organization/admin"
-          }
-        ],
-        "name":"admin"
-      }*/
-
     //this is will be a different call 
     // I have to override this 
     async function callGetUserTeamRole(userName,orgName){
@@ -73,7 +37,7 @@ export const AccessControlDashboard = (clientAccessControl)=>{
             }            
             setTeamActions(teamRoles)
 		}catch(err){
-            if(err.data && err.status === 404){
+            if(err.data && err.status === 404 && err.data["api:message"]){
                 throw new Error(err.data["api:message"])
             }
             throw err
@@ -101,7 +65,7 @@ export const AccessControlDashboard = (clientAccessControl)=>{
     const setTeamActions = (teamRoles,dbUserRole) =>{
        // const database = databaseRoles.find(element => element["name"]["@value"] === dataproduct);
         //const role = database ? database['role'] : teamRole
-        __teamUserRole = teamRoles
+        __teamUserRoles = teamRoles
         __teamUserActions =  formatActionsRoles(teamRoles) 
         __userDBRoles = dbUserRole
         //if change the team I reset the __dbUserActions === at the teamActions
@@ -125,7 +89,7 @@ export const AccessControlDashboard = (clientAccessControl)=>{
     }
 
     const isAdmin = () =>{
-        return __teamUserRole && __teamUserRole.indexOf("admin")> -1 ? true : false
+        return Array.isArray(__teamUserRoles)  && __teamUserRoles.findIndex(item=>item["@id"]==="Role/admin")> -1 ? true : false
     }
 
     const createDB = () =>{
@@ -138,6 +102,8 @@ export const AccessControlDashboard = (clientAccessControl)=>{
         return __teamUserActions[DELETE_DATABASE] ? true : false
      }
 
+     //!!!TO BE REVIEW
+     // I have to move this check at database-level
     const schemaWrite = () =>{
      if(!__teamUserActions)return false 
        return __teamUserActions[SCHEMA_WRITE_ACCESS] ? true : false
@@ -167,8 +133,13 @@ export const AccessControlDashboard = (clientAccessControl)=>{
         return __rolesList
     }
 
-    const getTeamUserRole = () =>{
-        return __teamUserRole
+    /**
+     * return an array with the team roles 
+     * Examples
+     * ["Role/reader","Role/writer"]
+     */
+    const getTeamUserRoles = () =>{
+        return __teamUserRoles
     }
 
 
@@ -182,7 +153,7 @@ export const AccessControlDashboard = (clientAccessControl)=>{
             setTeamActions,
             callGetUserTeamRole,
             setDBUserActions,
-            getTeamUserRole,
+            getTeamUserRoles,
             getRolesList,
             deleteDB,
             accessControl,

@@ -1,5 +1,5 @@
 import TerminusClient from '@terminusdb/terminusdb-client'
-
+import React from 'react';
 export const getInvitationListConfig = (limit,getDeleteButton) => {
     const tabConfig= TerminusClient.View.table();
     tabConfig.column_order("email_to", "status", "delete invitation")
@@ -48,14 +48,32 @@ export const getRoleListConfig = (limit,getActionButtons) => {
     return tabConfig
 }
 
+function formatRoles (cell) {
+    const rolesList = cell.row.original["role"]
+    if(!Array.isArray(rolesList))return ""
+    return rolesList.map(item=><p>{item["@id"]}</p>
+    )
+}
 
-export const getUsersListConfig = (limit,getActionButtons,getPicture,formatRoles) => {
+export const getUsersListConfigLocal = (limit,getActionButtons) => {
     const tabConfig= TerminusClient.View.table();
-    tabConfig.column_order("picture", "username", "role","actions")
+    tabConfig.column_order( "username", "role","actions")
     tabConfig.column("user")
-    tabConfig.column("picture").header(" ")
     tabConfig.column("username")
     tabConfig.column("role").render(formatRoles)
+    tabConfig.column("actions").render(getActionButtons)
+    tabConfig.pager("local")
+    tabConfig.pagesize(limit)
+    return tabConfig
+}
+
+export const getUsersListConfig = (limit,getActionButtons,getPicture) => {
+    const tabConfig= TerminusClient.View.table();
+    tabConfig.column_order("picture", "email", "role","actions")
+    tabConfig.column("user")
+    tabConfig.column("picture").header(" ")
+    tabConfig.column("email")
+    tabConfig.column("role")
     tabConfig.column("picture").render(getPicture)
     tabConfig.column("actions").render(getActionButtons)
     tabConfig.pager("local")
@@ -69,6 +87,19 @@ export const getUsersDatabaseListConfig = (limit,getActionButtons) => {
     tabConfig.column("capability")
     tabConfig.column("name")
     tabConfig.column("role").header("role")
+    tabConfig.column("Action").header("")
+
+    tabConfig.column("Action").render(getActionButtons)
+    tabConfig.pager("local")
+    tabConfig.pagesize(limit)
+    return tabConfig
+}
+
+export const getUsersDatabaseLocalListConfig = (limit,getActionButtons) => {
+    const tabConfig= TerminusClient.View.table();
+    tabConfig.column_order("name", "role","Action")
+    tabConfig.column("name")
+    tabConfig.column("role").render(formatRoles)
     tabConfig.column("Action").header("")
 
     tabConfig.column("Action").render(getActionButtons)

@@ -13,7 +13,7 @@ export const RoleList = ({setRole,userRoles,rolesList,parentRole,type}) => {
         //I visualize only the allowed roles
         if(index > maxLength ) return
         let isChecked = userRoles.find(role=> item['@id'] === role) ? {checked:true} :{}
-        console.log("isChecked", isChecked)
+        //console.log("isChecked", isChecked)
         return <Fragment>
                     <Form.Check className="d-flex align-items-center mb-4" type={itemType} key={item['@id']} name="group1" >
                     <Form.Check.Input name="group1" id={item['@id']} className="p-3" type={itemType} {...isChecked} onChange={(evt)=>{setRole(evt,item['@id'])}} />
