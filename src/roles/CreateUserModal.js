@@ -9,11 +9,13 @@ export const CreateUserModal = ({accessControlDashboard,showModal, setShowModal,
     const passwordRef = useRef(null);
     const {loading,errorMessage,setError,createElementByName} =  AccessControlHook(accessControlDashboard,{})
     
+    const closeModal = () => setShowModal(false)
+
     const runCreate = async () => {
         const name = nameRef.current.value
         const password = passwordRef.current.value
         if(!name || name === "" || !password || password === "") {
-            setError("Organization name and password are mandatory")
+            setError("Username and Password are mandatory")
             return
         }else{
             const done = await createElementByName(CREATE_USER, name, password)         
@@ -28,10 +30,10 @@ export const CreateUserModal = ({accessControlDashboard,showModal, setShowModal,
 
  
     //<Loading message={`Deleting Data Product ${dataProductDetails.label} ...`} type={PROGRESS_BAR_COMPONENT}/>}
-    return <Modal size="lg" className="modal-dialog-right" show={showModal} onHide={setShowModal}>
+    return <Modal size="lg" className="modal-dialog-right" show={showModal} onHide={closeModal}>
         <Modal.Header>
-            <Modal.Title className="h6">Create a new Organization</Modal.Title>
-            <Button variant="close" aria-label="Close" onClick={setShowModal} />
+            <Modal.Title className="h6">Create a new User</Modal.Title>
+            <Button variant="close" aria-label="Close" onClick={closeModal} />
         </Modal.Header>
         <Modal.Body className="p-5">
             {errorMessage && 
@@ -43,10 +45,13 @@ export const CreateUserModal = ({accessControlDashboard,showModal, setShowModal,
                         id="add_element_name" 
                         type="text"
                         placeholder={`Please type the user name`} />
+                   
+                </Form.Group>
+                <Form.Group>
                     <Form.Control required 
                         ref={passwordRef}
                         id="add_element_password" 
-                        type="text"
+                        type="password"
                         placeholder={`Please type the user password`} />
                 </Form.Group>
             </Form>

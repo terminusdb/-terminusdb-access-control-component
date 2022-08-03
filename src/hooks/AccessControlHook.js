@@ -18,6 +18,13 @@ export const AccessControlHook=(accessControlDashboard,options)=> {
     const [rolesList,setRolesList]=useState(accessControlDashboard.getRolesList())
     const [resultTable,setResultTable]=useState([])
 
+    const formatMessage = (err)=>{
+        let message = err.message
+        if(err.data && err.data["api:message"]){
+            message = err.data["api:message"]
+        }
+        return message
+    }
 
     const clientAccessControl = accessControlDashboard.accessControl()
     const resetInvitation = ()=>{
@@ -54,7 +61,7 @@ export const AccessControlHook=(accessControlDashboard,options)=> {
         const errorMessage = "I can not get the roles list"
         try{
             const result = await accessControlDashboard.callGetRolesList()
-            setRolesList (result)
+            setRolesList (result.reverse())
             if(successMessage)setSuccessMessage(successMessage)
         }catch(err){
             setError(errorMessage)
@@ -74,7 +81,7 @@ export const AccessControlHook=(accessControlDashboard,options)=> {
             await getUserDatabasesRoles(orgName,userid)
             if(successMessage)setSuccessMessage(successMessage)
         }catch(err){
-            setError(errorMessage)
+            setError(formatMessage(err))
         }finally{          
             setLoading(false)
         }
@@ -240,7 +247,7 @@ export const AccessControlHook=(accessControlDashboard,options)=> {
             await clientAccessControl.deleteOrgInvite(invid,orgName)
 			getOrgInvitations(orgName)
 		}catch(err){
-           setError(err.message)
+           setError(formatMessage(err))
 		}finally{
         	setLoading(false)
         }
@@ -252,7 +259,7 @@ export const AccessControlHook=(accessControlDashboard,options)=> {
 			await clientAccessControl.removeUserFromOrg(userid,orgName)
             getOrgUsers(orgName)
 		}catch(err){
-            setError(err.message)
+            setError(formatMessage(err))
 		}finally{
         	setLoading(false)
         }
@@ -265,7 +272,7 @@ export const AccessControlHook=(accessControlDashboard,options)=> {
 			await clientAccessControl.createRole(name,actions)
             return true
 		}catch(err){    
-			setError(err.message)
+			setError(formatMessage(err))
             return false           
 		}finally{
         	setLoading(false)
@@ -279,10 +286,16 @@ export const AccessControlHook=(accessControlDashboard,options)=> {
         setLoading(true)
 		try{
 			//const user = await clientAccessControl.addUser(name,password)
-            await clientAccessControl.manageCapability(username, teamId, roles,operation)
+            const rolesIds = roles.map(item =>{
+                if(typeof item === "object"){
+                    return item["@id"]
+                }
+                else return item
+            })
+            await clientAccessControl.manageCapability(username, teamId, rolesIds, operation)
             return true
 		}catch(err){
-        	setError(err.message)
+        	setError(formatMessage(err))
             return false
 		}finally{
         	setLoading(false)
@@ -302,11 +315,12 @@ export const AccessControlHook=(accessControlDashboard,options)=> {
             }
             setResultTable(result.reverse())
         }catch(err){
-			setError(err.message)
+			setError(formatMessage(err))
 		}finally{
         	setLoading(false)
         }
     }
+
 
     /*
     * delete an document by name
@@ -320,7 +334,7 @@ export const AccessControlHook=(accessControlDashboard,options)=> {
 			await clientAccessControl[methodName](name)
             return true
 		}catch(err){
-			setError(err.message)
+			setError(formatMessage(err))
             return false
 		}finally{
         	setLoading(false)
@@ -338,7 +352,7 @@ export const AccessControlHook=(accessControlDashboard,options)=> {
 			await clientAccessControl[methodName](name,extraParam)
             return true
 		}catch(err){
-            setError(err.message)
+            setError(formatMessage(err))
             return false
 		}finally{
         	setLoading(false)

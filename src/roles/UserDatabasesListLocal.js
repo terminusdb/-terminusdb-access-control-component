@@ -3,12 +3,12 @@ import React, {useState,useEffect} from "react"
 import {Row, Card, Col,Button} from "react-bootstrap"
 import {GrUserAdmin} from "react-icons/gr"
 import {WOQLTable} from '@terminusdb/terminusdb-react-table'
-import {getUsersDatabaseListConfig} from "../ViewConfig"
+import {getUsersDatabaseLocalListConfig} from "../ViewConfig"
 import {AccessControlHook} from "../hooks/AccessControlHook"
 import {RoleListModal} from "./RoleList"
-import {formatCell} from "./formatData"
 
 export const UserDatabasesListLocal = ({team,selectedUser,accessControlDashboard,options}) => {  
+
     const [currentRoleToUpdate,setCurrentRoleToUpdate]=useState(null)
     const [show, setShow] = useState(false)
     const roles = accessControlDashboard.getRolesList()
@@ -24,9 +24,19 @@ export const UserDatabasesListLocal = ({team,selectedUser,accessControlDashboard
           successMessage} =  AccessControlHook(accessControlDashboard)
     
     //to be review the roles list doesn't change
+    const resultFormatter=(result)=>{
+        if(!Array.isArray(result))return []
+        const result01 = result.map(item=>{
+            item.role =selectTeamRow.role
+            return item
+        })
+
+        return result01
+    }
+
     useEffect(() => {
-        getUserDatabasesRoles(team,selectTeamRow.userid)
-    }, [selectTeamRow.userid])
+        getUserDatabasesRoles(team,selectTeamRow["@id"],resultFormatter)
+    }, [selectTeamRow["@id"]])
 
    //const orgUserArr = Array.isArray(orgUsers) ? orgUsers : []
    // let rowCount=orgUserArr.length  
@@ -56,7 +66,8 @@ export const UserDatabasesListLocal = ({team,selectedUser,accessControlDashboard
 
     
     function getActionDbButtons (cell) {       
-        const currentSelected = formatCell(cell,"DATAPRODUCT")
+        const currentSelected = cell.row.original
+        return <div></div>
         return <span className="d-flex">          
             <Button variant="success" size="sm"  title={`change user roles`} onClick={() => changeUserRoleForScope(currentSelected)}>
                 <GrUserAdmin/> 
@@ -71,7 +82,7 @@ export const UserDatabasesListLocal = ({team,selectedUser,accessControlDashboard
     
     
     const parentRole = selectTeamRow ? selectTeamRow.role : null
-    const databaseListConfig = getUsersDatabaseListConfig(10,getActionDbButtons)
+    const databaseListConfig = getUsersDatabaseLocalListConfig(10,getActionDbButtons)
     
     if(loading){
         return  <Row className="mr-5 ml-2">
@@ -89,13 +100,10 @@ export const UserDatabasesListLocal = ({team,selectedUser,accessControlDashboard
                 {Array.isArray(userDatabaseList) && 
                      <Card className="shadow-sm m-4">
                      <Card.Header className=" d-flex justify-content-between bg-transparent">
-                         {selectTeamRow && <Col className="d-flex align-item-center">
-                            <img src={selectTeamRow.picture} 
-                                alt={"Profile"}
-                                className="nav__main__profile__img mr-4"
-                                width="50"/> <h6 className="mb-0 mt-1 float-left text-muted">{selectTeamRow.email} Dataproducts Role
-                            </h6></Col>}
-     
+                        <Col className="d-flex align-item-center">
+                            <h6 className="mb-0 mt-1 float-left text-muted">{selectTeamRow.name} Dataproducts Role
+                            </h6>
+                        </Col>
                      </Card.Header>
                     <Card.Body>                       
                         <WOQLTable

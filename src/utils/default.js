@@ -17,9 +17,9 @@ export const defaultSetting ={
         ORGANIZATION_LIST:false
     },
     buttons:{
-        ADD_USER:true,
+        ADD_USER:false,
         ADD_INVITATION:false,
-        ADD_ROLE:true,  
+        ADD_ROLE:false,  
     },
     hookMessage:{
         sendInvitation:{
