@@ -23,8 +23,7 @@ export const AccessControlDashboard = (clientAccessControl)=>{
             }
     }
 
-    //this is will be a different call 
-    // I have to override this 
+   
     async function callGetUserTeamRole(userName,orgName){
 		try{
 			const result = await __clientAccessControl.getTeamUserRoles(userName,orgName)

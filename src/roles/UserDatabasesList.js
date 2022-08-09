@@ -5,53 +5,32 @@ import {GrUserAdmin} from "react-icons/gr"
 import {WOQLTable} from '@terminusdb/terminusdb-react-table'
 import {getUsersDatabaseListConfig} from "../ViewConfig"
 import {AccessControlHook} from "../hooks/AccessControlHook"
-import {RoleListModal} from "./RoleList"
+import {ManageUserCapabilityModal} from "./ManageUserCapabilityModal"
 import {formatCell} from "./formatData"
 
 export const UserDatabasesList = ({team,selectedUser,accessControlDashboard,options}) => {  
     const [currentRoleToUpdate,setCurrentRoleToUpdate]=useState(null)
     const [show, setShow] = useState(false)
-    const roles = accessControlDashboard.getRolesList()
 
     const selectTeamRow = selectedUser || {}
  
-    const {createUserRole,
-          getUserDatabasesRoles,
+    const {getUserDatabasesRoles,
           userDatabaseList,
-          updateUserRole,
           loading,
-          errorMessage,
-          successMessage} =  AccessControlHook(accessControlDashboard)
+          errorMessage} =  AccessControlHook(accessControlDashboard)
     
     //to be review the roles list doesn't change
     useEffect(() => {
-        getUserDatabasesRoles(team,selectTeamRow.userid)
+        updateResultTable()
     }, [selectTeamRow.userid])
 
-   //const orgUserArr = Array.isArray(orgUsers) ? orgUsers : []
-   // let rowCount=orgUserArr.length  
+   function updateResultTable(){
+        getUserDatabasesRoles(team,selectTeamRow.userid)
+   }
 
-    //if not capability I create the role
     const changeUserRoleForScope= (currentSelected)=>{
         setCurrentRoleToUpdate(currentSelected)
         setShow(true)
-    }
-
-    const changeUserRole = (role) =>{
-        //alert(role)
-        if(currentRoleToUpdate.capability){
-            updateUserRole(team,currentRoleToUpdate.userid,currentRoleToUpdate.capability,role,currentRoleToUpdate.scope).then(()=>{
-                if(!errorMessage){
-                    setShow(false)
-                } 
-            })
-        }else{
-            createUserRole(team,currentRoleToUpdate.userid,role,currentRoleToUpdate.scope).then(()=>{
-                if(!errorMessage){
-                    setShow(false)
-                }
-            })
-        }
     }
 
     
@@ -63,12 +42,6 @@ export const UserDatabasesList = ({team,selectedUser,accessControlDashboard,opti
             </Button>
         </span>
     }
-
-    const propsObj = {show, setShow, team:team,loading,
-        clickButton:changeUserRole,
-        errorMessage,
-        successMessage}
-    
     
     const parentRole = selectTeamRow ? selectTeamRow.role : null
     const databaseListConfig = getUsersDatabaseListConfig(10,getActionDbButtons)
@@ -83,7 +56,14 @@ export const UserDatabasesList = ({team,selectedUser,accessControlDashboard,opti
 
     return <React.Fragment>
                 {currentRoleToUpdate && show && 
-                    <RoleListModal rolesList={roles} parentRole={parentRole} {...currentRoleToUpdate} {...propsObj}   title={`Change the user role for the ${currentRoleToUpdate.name} ${currentRoleToUpdate.type}`}/>
+                <ManageUserCapabilityModal currentRoleToUpdate={currentRoleToUpdate}   
+                    parentRole ={parentRole }   
+                    showModal={show}
+                    setShowModal={setShow} team={team} 
+                    accessControlDashboard={accessControlDashboard} 
+                    options={options}
+                    updateTable ={updateResultTable}/>
+
                 }
        
                 {Array.isArray(userDatabaseList) && 
@@ -93,8 +73,8 @@ export const UserDatabasesList = ({team,selectedUser,accessControlDashboard,opti
                             <img src={selectTeamRow.picture} 
                                 alt={"Profile"}
                                 className="nav__main__profile__img mr-4"
-                                width="50"/> <h6 className="mb-0 mt-1 float-left text-muted">{selectTeamRow.email} Dataproducts Role
-                            </h6></Col>}
+                                width="50"/> <h5 className="mb-0 mt-1 float-left text-success">{selectTeamRow.email} Dataproducts Role
+                            </h5></Col>}
      
                      </Card.Header>
                     <Card.Body>                       

@@ -5,29 +5,31 @@ import {GrUserAdmin} from "react-icons/gr"
 import {WOQLTable} from '@terminusdb/terminusdb-react-table'
 import {getUsersDatabaseLocalListConfig} from "../ViewConfig"
 import {AccessControlHook} from "../hooks/AccessControlHook"
-import {RoleListModal} from "./RoleList"
+import {AddUserCapabilityModal} from "./AddUserCapabilityModal"
+import {RiDeleteBin7Line} from "react-icons/ri"
+import {RevokeCapability } from "./RevokeCapability"
 
-export const UserDatabasesListLocal = ({team,selectedUser,accessControlDashboard,options}) => {  
-
-    const [currentRoleToUpdate,setCurrentRoleToUpdate]=useState(null)
-    const [show, setShow] = useState(false)
-    const roles = accessControlDashboard.getRolesList()
+export const UserDatabasesListLocal = ({team,selectedUser,accessControlDashboard,options,updateTable}) => {  
+    const [showAdd, setShowAdd] = useState(false)
+    const [selectedRow, setSelectRow] = useState(null)
+    const [showDelete, setShowDelete] = useState(false)
 
     const selectTeamRow = selectedUser || {}
- 
-    const {createUserRole,
-          getUserDatabasesRoles,
-          userDatabaseList,
-          updateUserRole,
-          loading,
-          errorMessage,
-          successMessage} =  AccessControlHook(accessControlDashboard)
+
+    const {getUserDatabasesRoles,
+           userDatabaseList,
+           loading,
+           errorMessage,
+           successMessage} =  AccessControlHook(accessControlDashboard)
     
     //to be review the roles list doesn't change
     const resultFormatter=(result)=>{
         if(!Array.isArray(result))return []
         const result01 = result.map(item=>{
-            item.role =selectTeamRow.role
+            if(selectTeamRow.databases[item["@id"]]) {
+                item.role = selectTeamRow.databases[item["@id"]]
+            }         
+            item.team_role=selectTeamRow.role
             return item
         })
 
@@ -38,50 +40,47 @@ export const UserDatabasesListLocal = ({team,selectedUser,accessControlDashboard
         getUserDatabasesRoles(team,selectTeamRow["@id"],resultFormatter)
     }, [selectTeamRow["@id"]])
 
-   //const orgUserArr = Array.isArray(orgUsers) ? orgUsers : []
-   // let rowCount=orgUserArr.length  
 
     //if not capability I create the role
-    const changeUserRoleForScope= (currentSelected)=>{
-        setCurrentRoleToUpdate(currentSelected)
-        setShow(true)
+    const addDatabaseRole= (currentSelected)=>{
+        setSelectRow(currentSelected)
+        setShowAdd(true)
     }
 
-    const changeUserRole = (role) =>{
-        //alert(role)
-        if(currentRoleToUpdate.capability){
-            updateUserRole(team,currentRoleToUpdate.userid,currentRoleToUpdate.capability,role,currentRoleToUpdate.scope).then(()=>{
-                if(!errorMessage){
-                    setShow(false)
-                } 
-            })
-        }else{
-            createUserRole(team,currentRoleToUpdate.userid,role,currentRoleToUpdate.scope).then(()=>{
-                if(!errorMessage){
-                    setShow(false)
-                }
-            })
-        }
+    async function updateAll(){
+        await updateTable()
+        //getUserDatabasesRoles(team,selectTeamRow["@id"],resultFormatter)
+    }
+
+    const deleteUserItem = (currentSelected)=>{
+        const row = {scope:currentSelected["@id"],
+                    role: currentSelected.role, 
+                    user:selectedUser['@id'],
+                    name:currentSelected.name,
+                    type:"Database"}
+        setSelectRow(row)
+        setShowDelete(true)
     }
 
     
     function getActionDbButtons (cell) {       
         const currentSelected = cell.row.original
-        return <div></div>
-        return <span className="d-flex">          
-            <Button variant="success" size="sm"  title={`change user roles`} onClick={() => changeUserRoleForScope(currentSelected)}>
-                <GrUserAdmin/> 
-            </Button>
-        </span>
+        //return <div></div>
+        return  <span className="d-flex"> 
+                {!currentSelected.role &&                        
+                    <Button variant="success" size="sm"  title={`Add database user roles`} onClick={() =>addDatabaseRole(currentSelected)}>
+                        <GrUserAdmin/> 
+                    </Button>
+                }
+                {currentSelected.role &&
+                    <Button variant="danger" size="sm"  title={`Revoke the database user roles`} onClick={() => deleteUserItem(currentSelected)}>              
+                        <RiDeleteBin7Line/> 
+                    </Button>
+                }
+                </span>
     }
-
-    const propsObj = {show, setShow, team:team,loading,
-        clickButton:changeUserRole,
-        errorMessage,
-        successMessage}
     
     
-    const parentRole = selectTeamRow ? selectTeamRow.role : null
     const databaseListConfig = getUsersDatabaseLocalListConfig(10,getActionDbButtons)
     
     if(loading){
@@ -92,17 +91,38 @@ export const UserDatabasesListLocal = ({team,selectedUser,accessControlDashboard
                 </Row>
     }
 
+    const labels = selectedRow ? {
+        modalTitle : <h5>Are you sure to revoke the database <span className="text-success" >{selectedRow.name}</span> roles for the user  {selectedRow.username} ?</h5>,
+        buttonTitle : `Revoke  the database roles`,
+        buttonLabel: "Revoke the database roles"
+    } : {}
+
     return <React.Fragment>
-                {currentRoleToUpdate && show && 
-                    <RoleListModal rolesList={roles} parentRole={parentRole} {...currentRoleToUpdate} {...propsObj}   title={`Change the user role for the ${currentRoleToUpdate.name} ${currentRoleToUpdate.type}`}/>
-                }
+                {showDelete &&  selectedRow && <RevokeCapability labels={labels}
+                 showModal={showDelete} 
+                 setShowModal={setShowDelete} 
+                 updateTable={updateTable} 
+                 revokeCapabilityObj={selectedRow} 
+                 accessControlDashboard={accessControlDashboard}/>}
+       
+                 {showAdd &&  selectedRow && <AddUserCapabilityModal
+                         showModal={showAdd} 
+                         setShowModal={setShowAdd}
+                         accessControlDashboard={accessControlDashboard} 
+                         options={options} 
+                         updateTable={updateAll}
+                         resourceId={selectedRow["@id"]}
+                         title={`Add Database ${selectedRow.name} Roles`}
+                         defaultUser={selectTeamRow["@id"]}
+                        />}
        
                 {Array.isArray(userDatabaseList) && 
                      <Card className="shadow-sm m-4">
                      <Card.Header className=" d-flex justify-content-between bg-transparent">
                         <Col className="d-flex align-item-center">
-                            <h6 className="mb-0 mt-1 float-left text-muted">{selectTeamRow.name} Dataproducts Role
-                            </h6>
+                            <h5 className="mb-0 mt-1 float-left text-muted">
+                                <strong className="text-success">{selectTeamRow.username} </strong> Dataproducts Role
+                            </h5>
                         </Col>
                      </Card.Header>
                     <Card.Body>                       

@@ -49,9 +49,10 @@ export const getRoleListConfig = (limit,getActionButtons) => {
 }
 
 function formatRoles (cell) {
-    const rolesList = cell.row.original["role"]
+    const columnId= cell.column.id
+    const rolesList = cell.row.original[columnId]
     if(!Array.isArray(rolesList))return ""
-    return rolesList.map(item=><p>{item["@id"]}</p>
+    return rolesList.map((item,index)=><p key={`${index}__key`}>{item["@id"]}</p>
     )
 }
 
@@ -60,7 +61,7 @@ export const getUsersListConfigLocal = (limit,getActionButtons) => {
     tabConfig.column_order( "username", "role","actions")
     tabConfig.column("user")
     tabConfig.column("username")
-    tabConfig.column("role").render(formatRoles)
+    tabConfig.column("role").render(formatRoles).header("Roles")
     tabConfig.column("actions").render(getActionButtons)
     tabConfig.pager("local")
     tabConfig.pagesize(limit)
@@ -97,9 +98,10 @@ export const getUsersDatabaseListConfig = (limit,getActionButtons) => {
 
 export const getUsersDatabaseLocalListConfig = (limit,getActionButtons) => {
     const tabConfig= TerminusClient.View.table();
-    tabConfig.column_order("name", "role","Action")
+    tabConfig.column_order("name",  "team_role", "role", "Action")
     tabConfig.column("name")
-    tabConfig.column("role").render(formatRoles)
+    tabConfig.column("team_role").render(formatRoles).header("Team Roles")
+    tabConfig.column("role").render(formatRoles).header("Database Roles")
     tabConfig.column("Action").header("")
 
     tabConfig.column("Action").render(getActionButtons)

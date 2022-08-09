@@ -1,5 +1,5 @@
 import React, {Fragment,useState} from "react"
-import {Modal, Button, Form} from "react-bootstrap"
+import {Modal, Button, Form,Alert} from "react-bootstrap"
 import {FiUserPlus} from "react-icons/fi"
 import {TERMINUS_DANGER,TERMINUS_SUCCESS} from "../constants"
 import {Alerts} from "../Alerts"
@@ -27,20 +27,27 @@ export const RoleList = ({setRole,userRoles,rolesList,parentRole,type}) => {
 }
 
 export const RoleListModal = (props)=>{
+    //"Role/collaborator"
+    const [userRoles, setRole]=useState(props.userRoles || [])
     
-    const [userRoles, setRole]=useState(props.userRoles || ["Role/collaborator"])
-
     const setNewRole = (evt,role) =>{
         const checked = evt.target.checked
-        if(checked){
-            userRoles.push(role)
-        }else{
-            const index = userRoles.find(role)
-            if(index>-1){
-                userRoles.splice(index,1)
+        let tmpUserRoles = userRoles
+        if(props.type === "checkbox"){
+            if(checked){
+                tmpUserRoles.push(role)
+            }else{
+                const index = tmpUserRoles.find(role)
+                if(index>-1){
+                    tmpUserRoles.splice(index,1)
+                }
             }
+        }else{
+            //this is radio button type with only one value
+            tmpUserRoles=[role]
         }
-        setRole(userRoles)
+
+        setRole(tmpUserRoles)
     }
 
     const rolesList = props.rolesList
@@ -53,8 +60,8 @@ export const RoleListModal = (props)=>{
         </Modal.Header>
         <Modal.Body>
             {props.successMessage &&
-            <Alerts message={"the invitation has been sent"} type={TERMINUS_SUCCESS}/>}
-            {props.errorMessage &&  <Alerts message={props.errorMessage} type={TERMINUS_DANGER}/>}
+            <Alert variant="success">the invitation has been sent</Alert>}
+            {props.errorMessage &&  <Alert variant="danger"  onClose={() => setError(false)} dismissible>{props.errorMessage}</Alert>}
 
             {props.children}
             {rolesList &&
@@ -69,5 +76,3 @@ export const RoleListModal = (props)=>{
         </Modal.Footer>
         </Modal>
 }
-
-//"Please enter a valid email to send an invitation""the invitation has been sent",`Invite a new member to your team - ${team}`

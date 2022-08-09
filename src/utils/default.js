@@ -10,8 +10,7 @@ export const defaultSetting ={
     tabs:{
         MEMBERS_TAB:false,
         INVITATION_TAB:false,
-        REQUEST_ACCESS:false,
-        
+        REQUEST_ACCESS:false,        
         ALL_USER:false,
         ROLES_LIST:false,
         ORGANIZATION_LIST:false
@@ -35,6 +34,7 @@ export const defaultSetting ={
         }
     }
 }
+
 
 //method name
 export const GET_ALL_ORGANIZATIONS= "getAllOrganizations"

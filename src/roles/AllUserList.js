@@ -15,7 +15,6 @@ export const AllUserList = ({accessControlDashboard,options}) => {
 
     const [showDelete, setShowDelete] = useState(false)
     const [showAdd, setShowAdd ]= useState(false)
-    const [showUpdate, setShowUpdate ]= useState(false)
 
     const [rowSelected, setRowSelected] = useState(false)
 
@@ -23,13 +22,21 @@ export const AllUserList = ({accessControlDashboard,options}) => {
     
     const tableListArr = Array.isArray(resultTable) ? resultTable : []
 
+    const filterTable = (result) =>{
+        //remove admin and anonymous users from the list
+        // they are the first and the second user send back in the array
+        result.shift();
+        result.shift();
+        return result
+    }
+
     // all the system database user
     useEffect(() => {
         updateResultTable()
     }, [])
 
     const updateResultTable = () =>{
-        getResultTable(GET_ALL_USERS)
+        getResultTable(GET_ALL_USERS,filterTable)
     }
 
 
@@ -51,16 +58,9 @@ export const AllUserList = ({accessControlDashboard,options}) => {
             <Button variant="danger" size="sm" className="ml-5" title={`delete - name`} onClick={() => deleteAction(cell.row.original)}>
                 <RiDeleteBin7Line/> 
             </Button>
-          
         </span></React.Fragment>
-        
     }
 
-    /*
-      <Button variant="success" size="sm" className="ml-5" title={`add - name`} onClick={() => userToUpdate(cell.row.original)}>
-                <AiOutlineUserAdd/> 
-            </Button>
-    */
     const tableConfig = getListConfigBase(10, getActionButtons)
 
     if(loading){
@@ -70,9 +70,7 @@ export const AllUserList = ({accessControlDashboard,options}) => {
                     </Card>
                 </Row>
     }
-    
 
-   
     return <React.Fragment>
         {showDelete && <DeleteElementByName 
                         updateTable={updateResultTable}
@@ -89,15 +87,7 @@ export const AllUserList = ({accessControlDashboard,options}) => {
                         accessControlDashboard={accessControlDashboard} 
                         showModal={showAdd} 
                         setShowModal={setShowAdd}/>}
-        {showUpdate && <AddUserCapabilityModal
-                         showModal={showUpdate} 
-                         setShowModal={setShowUpdate}
-                         accessControlDashboard={accessControlDashboard} 
-                         options={options} 
-                         defaultName={rowSelected.name}
-                         rowSelected ={rowSelected}
-                         team = "Organization/fra_org" 
-                        />}
+
         <Row className="mr-5 ml-2">
             <Card className="shadow-sm m-4">
                 <Card.Header className="bg-transparent">

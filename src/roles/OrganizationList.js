@@ -21,15 +21,21 @@ export const OrganizationList = ({accessControlDashboard,options}) => {
     const [rowSelected, setRowSelected] = useState(false)
     const {loading,resultTable, getResultTable} =  AccessControlHook(accessControlDashboard,options)    
     
-    const tableListArr = Array.isArray(resultTable) ? resultTable.reverse() : []
+    const tableListArr = Array.isArray(resultTable) ? resultTable : []
 
+    const filterTable = (result) =>{
+        //remove admin organization from the list
+        //in this moment you can not add user in admin team from the interface
+        result.shift();
+        return result
+    }
     // all the system database user
     useEffect(() => {
         updateResultTable()
     }, [])
 
     function updateResultTable(){
-        getResultTable(GET_ALL_ORGANIZATIONS)
+        getResultTable(GET_ALL_ORGANIZATIONS,filterTable)
     }
 
     function deleteAction(cell){
@@ -62,7 +68,6 @@ export const OrganizationList = ({accessControlDashboard,options}) => {
                     </Card>
                 </Row>
     }
-    
 
     return <React.Fragment>
         {showDelete && <DeleteElementByName 
@@ -75,11 +80,12 @@ export const OrganizationList = ({accessControlDashboard,options}) => {
                         methodName={DELETE_ORGANIZATION}/>}
                         
         {showAdd && <CreateOrganizationModal
-                                options={options} 
-                                updateTable={updateResultTable}
-                                accessControlDashboard={accessControlDashboard} 
-                                showModal={showAdd} 
-                                setShowModal={setShowAdd}/>}
+                        title="Create a new Organization"
+                        options={options} 
+                        updateTable={updateResultTable}
+                        accessControlDashboard={accessControlDashboard} 
+                        showModal={showAdd} 
+                        setShowModal={setShowAdd}/>}
        
         <Row className="mr-5 ml-2">
             <Card className="shadow-sm m-4">

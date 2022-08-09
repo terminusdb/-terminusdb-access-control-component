@@ -1,9 +1,8 @@
-import React, {useEffect, useState} from "react"
+import React, {useState} from "react"
 import {Alert, Modal, Button, Form} from "react-bootstrap" 
 import {AiOutlineDelete} from "react-icons/ai"
-import {AccessControlHook} from "../hooks/AccessControlHook"
 
-export const DeleteElementModal = ({showModal, setShowModal, elementType, elementName,deleteElement,loading,errorMessage,setError}) => {
+export const DeleteElementModal = ({showModal, setShowModal, labels, elementType, elementName,deleteElement,loading,errorMessage,setError}) => {
     const [id, setID]=useState(false)
     const [disabled, setDisabled]=useState(true)
     
@@ -24,10 +23,18 @@ export const DeleteElementModal = ({showModal, setShowModal, elementType, elemen
     function handleClose (e) {
         if(setShowModal) setShowModal(false)
     }
+
+    const defaultTitles = {
+        modalTitle : `Are you sure to delete ${elementType} - ${elementName} ?`,
+        buttonTitle : `Delete ${elementType} ${elementName}`,
+        buttonLabel: "Delete"
+    }
+
+    const currentTitles =  Object.assign({}, defaultTitles, labels);
     //<Loading message={`Deleting Data Product ${dataProductDetails.label} ...`} type={PROGRESS_BAR_COMPONENT}/>}
     return <Modal size="lg" className="modal-dialog-right" show={showModal} onHide={handleClose}>
         <Modal.Header>
-            <Modal.Title className="h6">{`Are you sure to delete ${elementType} - ${elementName} ?`} </Modal.Title>
+            <Modal.Title className="h6">{currentTitles.modalTitle} </Modal.Title>
             <Button variant="close" aria-label="Close" onClick={handleClose} />
         </Modal.Header>
         <Modal.Body className="p-5">
@@ -43,7 +50,7 @@ export const DeleteElementModal = ({showModal, setShowModal, elementType, elemen
                         id="delete_element_name" 
                         type="text"
                         onChange={handleOnChange} 
-                        placeholder={`Please type the ${elementType} ID you wish to delete`} />
+                        placeholder={`Please type the ${elementType} ID`} />
                 </Form.Group>
             </Form>
         </Modal.Body>
@@ -51,10 +58,10 @@ export const DeleteElementModal = ({showModal, setShowModal, elementType, elemen
             <Button
                 id ="delete_element_button"
                 variant="danger" 
-                title={`Delete ${elementType} ${elementName}`} 
+                title={currentTitles.buttonTitle} 
                 disabled={disabled || loading}
                 onClick={handleClick}>
-                <AiOutlineDelete className="me-2" /> {loading ? 'Loading ...' : "Delete"}  
+                <AiOutlineDelete className="me-2" /> {loading ? 'Loading ...' : currentTitles.buttonLabel }  
             </Button>
         </Modal.Footer>
     </Modal>
