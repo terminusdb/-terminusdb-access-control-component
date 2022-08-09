@@ -2,20 +2,21 @@ import React from "react"
 import {AccessControlHook} from "../hooks/AccessControlHook"
 import { DeleteElementModal } from "./DeleteElementModal"
 
-export const RevokeCapability = ({accessControlDashboard,showModal, setShowModal,  selectedRow, updateTable }) => {
+export const RevokeCapability = ({accessControlDashboard,showModal, labels, setShowModal, revokeCapabilityObj, updateTable }) => {
    
     const {manageCapability,loading,errorMessage,setError} =  AccessControlHook(accessControlDashboard,{})
-    
+    if(!revokeCapabilityObj) return ""
+
     const deleteElement = () =>{
-        manageCapability(selectedRow.scope,"revoke",selectedRow.role, selectedRow["@id"]).then(done=>{
-            if(done){
-                updateTable()
+        manageCapability(revokeCapabilityObj.scope,"revoke",revokeCapabilityObj.role, revokeCapabilityObj.user).then(done=>{
+            if(done){             
                 setShowModal(false)
+                updateTable()
             }
         })
    }
 
-   const vars = {showModal, setShowModal, elementType:"User", elementName:selectedRow.username,loading,errorMessage,setError}
+   const vars = {showModal, labels, setShowModal, elementType:revokeCapabilityObj.type, elementName:revokeCapabilityObj.name,loading,errorMessage,setError}
    return <DeleteElementModal deleteElement={deleteElement} {...vars} />
     
 }

@@ -6,18 +6,18 @@ import { GET_ALL_USERS } from "../utils/default"
 import { RoleListModal } from "./RoleList"
 
 //create user if do not exists and add to team
-export const AddUserCapabilityModal = ({showModal, setShowModal, team, teamId, accessControlDashboard,options,updateTable}) => {
+export const AddUserCapabilityModal = ({showModal, defaultUser, setShowModal, title, resourceId, accessControlDashboard,options,updateTable}) => {
     if(!accessControlDashboard) return ""
     const {successMessage,
             manageCapability,getRolesList,rolesList,
             resultTable, getResultTable,
-          loading,
-          errorMessage} =  AccessControlHook(accessControlDashboard,options)
-    const [error, setError]=useState(false)
+            loading,setError,
+            errorMessage} =  AccessControlHook(accessControlDashboard,options)
+
 
     useEffect(() => {
         if(rolesList.length===0)getRolesList()
-        updateResultTable()
+        if(!defaultUser)updateResultTable()
     }, [])
 
     const updateResultTable = () =>{
@@ -31,9 +31,16 @@ export const AddUserCapabilityModal = ({showModal, setShowModal, team, teamId, a
     const roles = rolesList//accessControlDashboard.getRolesList()
 //teamId,operation,roles, username,password
     function addUser(role){
-        const userId = userName.current.value
+        let userId = defaultUser
+        if(!defaultUser){
+            userId = userName.current.value
+            if(!userId || userId ==="NoSelect"){
+                setError("User id is mandatory")
+                return
+            }
+        }
 
-        manageCapability(teamId,"grant",role,userId).then(done=>{
+        manageCapability(resourceId,"grant",role,userId).then(done=>{
             if(done){
                 updateTable()
                 setShowModal(false)
@@ -51,8 +58,8 @@ export const AddUserCapabilityModal = ({showModal, setShowModal, team, teamId, a
         }
     }
 
-    const propsObj = {setShow:setShowModal, team:team,
-                title:`Add a menber to the team - ${team}`,
+    const propsObj = {setShow:setShowModal,
+                title:title,
                 clickButton:addUser}
     //const value =  defaultName ? {value:defaultName, disabled:true} : {}
 
@@ -63,40 +70,17 @@ export const AddUserCapabilityModal = ({showModal, setShowModal, team, teamId, a
                 successMessage={successMessage} 
                 show={showModal}
                 rolesList={roles}>
-            {error && <span className="d-flex">
-                <BiError className="text-danger mt-1 mr-1"/><p className="text-danger">Email is mandatory</p>
-            </span>}
             <Form onKeyPress={handleKeyPress}>
-            <Form.Group className="mb-3">
-                <Form.Select ref={userName}>
-                    <option>Select The User Name</option>
+            {!defaultUser && <Form.Group className="mb-3">
+                <Form.Select ref={userName} onChange={()=>{setError(false)}}>
+                    <option value="NoSelect">Select The User Name</option>
                     {resultTable && resultTable.map(item=>{
                         return <option value={item["@id"]}>{item.name}</option>
                     })
                     }
                 </Form.Select>
-            </Form.Group>          
+            </Form.Group>
+            }          
             </Form>
         </RoleListModal>
 }
-
-/*
-   <Form.Group className="mb-3">
-                    <Form.Control
-                        ref={userId}
-                        {...value}
-                        type="text"
-                        placeholder="User Id"
-                        aria-describedby="inputGroupPrepend"
-                        required
-                    />
-                </Form.Group>
-               {!defaultName &&<Form.Group>
-                    <Form.Control
-                        ref={password}
-                        type="password"
-                        placeholder="Password"
-                        aria-describedby="inputGroupPrepend"
-                        required
-                    />
-                </Form.Group>}*/

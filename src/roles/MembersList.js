@@ -7,30 +7,38 @@ import {GrUserAdmin} from "react-icons/gr"
 import {WOQLTable} from '@terminusdb/terminusdb-react-table'
 import {getUsersListConfig,getUsersDatabaseListConfig} from "../ViewConfig"
 import {AccessControlHook} from "../hooks/AccessControlHook"
-import {RoleListModal} from "./RoleList"
+import {ManageUserCapabilityModal} from "./ManageUserCapabilityModal"
 import {formatCell} from "./formatData"
 import {UserDatabasesList} from "./UserDatabasesList"
+import {DeleteTeamUser} from "./DeleteTeamUser"
 
 export const MembersList = ({team,currentUser,accessControlDashboard,options}) => {  
     if(!accessControlDashboard)return ""
 
     const [selectTeamRow,setSelectTeamRow]=useState(null)
+    const [selectUserToDelete,setSelectUserToDelete]=useState(null)
     const [currentRoleToUpdate,setCurrentRoleToUpdate]=useState(null)
-    const [show, setShow] = useState(false)
-    const roles = accessControlDashboard.getRolesList()
 
+    const [show, setShow] = useState(false)
+    const [showDelete, setShowDelete] = useState(false)
+    
     const localUser = currentUser || {}
  
-    const {deleteUserFromOrganization,getOrgUsers,orgUsers,createUserRole,
-          updateUserRole,
+    const {getOrgUsers,orgUsers,
           loading,
-          errorMessage,
-          successMessage} =  AccessControlHook(accessControlDashboard)
+          errorMessage} =  AccessControlHook(accessControlDashboard)
     
     //to be review the roles list doesn't change
     useEffect(() => {
-        getOrgUsers(team,true)
+        updateResultTable(team)
     }, [team])
+
+
+    const updateResultTable = () =>{
+        getOrgUsers(team)
+        setSelectUserToDelete(null)
+        setSelectTeamRow(null)
+    }
 
     const orgUserArr = Array.isArray(orgUsers) ? orgUsers : []
     let rowCount=orgUserArr.length  
@@ -41,27 +49,9 @@ export const MembersList = ({team,currentUser,accessControlDashboard,options}) =
         setShow(true)
     }
 
-    // maybe move in hook
-    const changeUserRole = (role) =>{
-        //alert(role)
-        if(currentRoleToUpdate.capability){
-            updateUserRole(team,currentRoleToUpdate.userid,currentRoleToUpdate.capability,role,currentRoleToUpdate.scope).then(()=>{
-                if(!errorMessage){
-                    setShow(false)
-                } 
-            })
-        }else{
-            createUserRole(team,currentRoleToUpdate.userid,role,currentRoleToUpdate.scope).then(()=>{
-                if(!errorMessage){
-                    setShow(false)
-                }
-            })
-        }
-    }
-
-    const deleteUserItem = (userId)=>{
-        deleteUserFromOrganization(team,userId)
-        setSelectTeamRow(null)
+    const deleteUserItem = (teamUserSelected)=>{
+        setSelectUserToDelete(teamUserSelected)
+        setShowDelete(true)
     }
     
     //when I get the database list I save the user selected in the table
@@ -84,7 +74,7 @@ export const MembersList = ({team,currentUser,accessControlDashboard,options}) =
                 </Button>
             }
             {options.interface.memberList.delete &&      
-                <Button variant="danger" size="sm" className="ml-5" title={`delete ${currentSelected.email}`} onClick={() => deleteUserItem(currentSelected['userid'])}>              
+                <Button variant="danger" size="sm" className="ml-5" title={`delete ${currentSelected.email}`} onClick={() => deleteUserItem(currentSelected)}>              
                     <RiDeleteBin7Line/> 
                 </Button>
             }
@@ -99,11 +89,6 @@ export const MembersList = ({team,currentUser,accessControlDashboard,options}) =
                     className="nav__main__profile__img mr-4"
                     width="50"/>
     }
-
-    const propsObj = {show, setShow, team:team,loading,
-        clickButton:changeUserRole,
-        errorMessage,
-        successMessage}
     
     
     const tableConfig = getUsersListConfig(10, getActionButtons,getPicture)
@@ -118,8 +103,21 @@ export const MembersList = ({team,currentUser,accessControlDashboard,options}) =
 
     return <React.Fragment>
         {currentRoleToUpdate && show && 
-            <RoleListModal rolesList={roles} {...currentRoleToUpdate} {...propsObj}   title={`Change the user role for the ${currentRoleToUpdate.name} ${currentRoleToUpdate.type}`}/>
+        <ManageUserCapabilityModal currentRoleToUpdate={currentRoleToUpdate} 
+            showModal={show}
+             setShowModal={setShow} team={team} 
+             accessControlDashboard={accessControlDashboard} 
+             options={options}
+             updateTable ={updateResultTable}/>
         }
+        {showDelete && <DeleteTeamUser 
+                        team={team}
+                        updateTable={updateResultTable}
+                        accessControlDashboard={accessControlDashboard}
+                        showModal={showDelete} 
+                        setShowModal={setShowDelete} 
+                        userSelected={selectUserToDelete}
+                        />}
         <Row className="mr-5 ml-2">
             <Card className="shadow-sm m-4">
                 <Card.Header className=" d-flex justify-content-between bg-transparent">

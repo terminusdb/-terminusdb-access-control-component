@@ -1,4 +1,3 @@
-
 import React, {useState,useEffect} from "react"
 import {Row, Card, Col, Badge,Button} from "react-bootstrap"
 import {RiDeleteBin7Line} from "react-icons/ri"
@@ -15,7 +14,7 @@ export const MembersListLocal = ({organizationInfo,currentUser,accessControlDash
     if(!accessControlDashboard)return ""
 
     const [selectTeamRow,setSelectTeamRow]=useState(null)
-    const [currentRoleToUpdate,setCurrentRoleToUpdate]=useState(null)
+   // const [currentRoleToUpdate,setCurrentRoleToUpdate]=useState(null)
 
     const [showDelete, setShowDelete] = useState(false)
     const [showAdd, setShowAdd] = useState(false)
@@ -34,23 +33,41 @@ export const MembersListLocal = ({organizationInfo,currentUser,accessControlDash
     //to be review the roles list doesn't change
     useEffect(() => {
         updateTable()
+        setSelectTeamRow(null)
+        setShowDelete(null)
     }, [team])
 
     const updateTable =()=>{
-        getOrgUsersLocal(team,true)
+        const tmpSelectTeamRow =selectTeamRow;
+        setSelectTeamRow(null)
+        getOrgUsersLocal(team).then((result)=>{
+            if(tmpSelectTeamRow){
+                const findRow = result.find(item=>item["@id"]===tmpSelectTeamRow["@id"])
+                if(findRow){
+                    setSelectTeamRow(findRow)
+                }
+            }
+        })
+
     }
 
     const orgUserArr = Array.isArray(orgUsers) ? orgUsers : []
     let rowCount=orgUserArr.length 
 
 
-    const deleteUserItem = (selectedRow)=>{
-        setSelectTeamRow(selectedRow)
+    const deleteUserItem = (currentSelected)=>{
+        currentSelected.user = currentSelected["@id"]
+        currentSelected.name = currentSelected.username
+        currentSelected.type = "User"
+        setSelectTeamRow(currentSelected)
         setShowDelete(true)
     }
     
     //when I get the database list I save the user selected in the table
     const getUserDatabaseList = (currentSelected)=>{
+        currentSelected.user = currentSelected["@id"]
+        currentSelected.type = "User"
+        currentSelected.name = currentSelected.username
         setSelectTeamRow(currentSelected)
     }
     
@@ -86,18 +103,21 @@ export const MembersListLocal = ({organizationInfo,currentUser,accessControlDash
                 </Row>
     }
 
+    const labels = selectTeamRow ? {
+                modalTitle : <h5>{"Are you sure to delete the User - "}<span className="text-success" >{selectTeamRow.username}</span> {`from the Organization ${team}?`}</h5>,
+                buttonTitle : `Remove the User from the team`,
+                buttonLabel: "Remove the user from the team"
+            } : {}
+
     return <React.Fragment>
-        {currentRoleToUpdate && show && 
-            <RoleListModal rolesList={roles} {...currentRoleToUpdate} {...propsObj}   title={`Change the user role for the ${currentRoleToUpdate.name} ${currentRoleToUpdate.type}`}/>
-        }
-        {showDelete && <RevokeCapability showModal={showDelete} setShowModal={setShowDelete} updateTable={updateTable} selectedRow={selectTeamRow} accessControlDashboard={accessControlDashboard}/>}
+        {showDelete && <RevokeCapability labels={labels} showModal={showDelete} setShowModal={setShowDelete} updateTable={updateTable} revokeCapabilityObj={selectTeamRow} accessControlDashboard={accessControlDashboard}/>}
         {showAdd && <AddUserCapabilityModal
                          showModal={showAdd} 
                          setShowModal={setShowAdd}
                          accessControlDashboard={accessControlDashboard} 
                          options={options} 
                          updateTable={updateTable}
-                         teamId={teamId}
+                         resourceId={teamId}
                          //defaultName={rowSelected.name}
                          //rowSelected ={rowSelected}
                          team = {team}
@@ -134,7 +154,7 @@ export const MembersListLocal = ({organizationInfo,currentUser,accessControlDash
                     />
                 </Card.Body>
                 </Card>
-                {selectTeamRow && <UserDatabasesListLocal team={team} selectedUser={selectTeamRow} accessControlDashboard={accessControlDashboard}/>}
+                {selectTeamRow && <UserDatabasesListLocal updateTable={updateTable} team={team} selectedUser={selectTeamRow} accessControlDashboard={accessControlDashboard}/>}
                    
         </Row>
     </React.Fragment>

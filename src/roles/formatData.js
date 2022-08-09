@@ -22,6 +22,7 @@ export const formatCell=(cell,type,team)=>{
             note:note,
             affiliation:affiliation,
             role:cell.row.original["role"],
+            //use the 
             scope:cell.row.original["scope"],
             capability:capId,
             picture:picture}

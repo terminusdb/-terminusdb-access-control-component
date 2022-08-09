@@ -1,19 +1,19 @@
 import React, {useState, useRef, useEffect} from "react"
-import {Form} from "react-bootstrap"
+import {Form,Alert} from "react-bootstrap"
 import {BiError} from "react-icons/bi"
 import {AccessControlHook} from "../hooks/AccessControlHook"
 
 import { RoleListModal } from "./RoleList"
 
-export const NewMemberModal = ({show, setShow, team, accessControlDashboard,options,defaultEmail}) => {
+export const NewMemberModal = ({show, setShow, team, accessControlDashboard,options,defaultEmail,updateTable}) => {
     if(!accessControlDashboard) return ""
     const {sendInvitation,
           successMessage,
           loading,
           resetInvitation,
           errorMessage} =  AccessControlHook(accessControlDashboard,options)
+    
     const [error, setError]=useState(false)
-
     const emailInput = useRef(null);
     const roles = accessControlDashboard.getRolesList()
 
@@ -24,10 +24,15 @@ export const NewMemberModal = ({show, setShow, team, accessControlDashboard,opti
             setError(true)
             return
         }else{
-            await sendInvitation(team,email,role)
-            emailInput.current.value = ""
-            setError(false)
-                       
+            await sendInvitation(team,email,role).then(done=>{
+                if(done){
+                    updateTable()
+                    setShow(false)
+                    emailInput.current.value = ""
+                    setError(false)
+                }
+            })
+                     
         }
     }
 

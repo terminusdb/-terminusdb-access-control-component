@@ -26,25 +26,25 @@ export const AccessControlHook=(accessControlDashboard,options)=> {
         return message
     }
 
-    const clientAccessControl = accessControlDashboard.accessControl()
-    const resetInvitation = ()=>{
-        setLoading(false)
+    function resetStatus(){
+        setLoading(true)
         setError(false)
         setSuccessMessage(false)
     }
 
+    const clientAccessControl = accessControlDashboard.accessControl()
+   
+
     async function sendInvitation(orgName,emailTo,role){
         const errorMessage = options.hookMessage.sendInvitation.error
-        const successMessage = options.hookMessage.sendInvitation.success   
-        setLoading(true)
-        setError(false) 
-        setSuccessMessage(false)
+        //const successMessage = options.hookMessage.sendInvitation.success   
+        resetStatus()
         try{
             await clientAccessControl.sendOrgInvite(emailTo, role, "",orgName)
-            setSuccessMessage(successMessage)
-            getOrgUsers()
+            return true
         }catch(err){
             setError(errorMessage)
+            return false
         }finally{          
             setLoading(false)
         }
@@ -72,34 +72,27 @@ export const AccessControlHook=(accessControlDashboard,options)=> {
 
 
     async function createUserRole(orgName,userid,role,scope){
-        setLoading(true)
-        setError(false) 
-        setSuccessMessage(false)
+        resetStatus()
         const errorMessage = "I can not create the role"
         try{
             await clientAccessControl.createUserRole(userid, scope, role, orgName)
-            await getUserDatabasesRoles(orgName,userid)
-            if(successMessage)setSuccessMessage(successMessage)
+            return true
         }catch(err){
             setError(formatMessage(err))
+            return false
         }finally{          
             setLoading(false)
         }
     }
     
     async function updateUserRole(orgName,userid,capid,role,scope){
-        setLoading(true)
-        setError(false)
-        setSuccessMessage(false)
+        resetStatus()
         try{
             await clientAccessControl.updateUserRole(userid, capid, scope, role, orgName)
-            if(typeof scope === "string" && scope.indexOf("Organization")> -1){
-                await getOrgUsers(orgName)
-            }
-            await getUserDatabasesRoles(orgName,userid)
-            if(successMessage)setSuccessMessage("The role has been update")
+            return true
         }catch(err){
             setError("I can not update the role")
+            return false
         }finally{                       
             setLoading(false)
         }
@@ -125,11 +118,11 @@ export const AccessControlHook=(accessControlDashboard,options)=> {
 
     } 
      //%3D%25team
-    async function getOrgUsers(orgName,resetUserDatabases=false){
+    async function getOrgUsers(orgName){
         setLoading(true)
 		try{
 			const response = await clientAccessControl.getOrgUsers(orgName)
-            if(resetUserDatabases)setUserDatabaseList(null)
+            //if(resetUserDatabases)setUserDatabaseList(null)
 			setOrgUsers(response)         
             return response
 		}catch(err){
@@ -156,7 +149,7 @@ export const AccessControlHook=(accessControlDashboard,options)=> {
         return {role,databases}
     }
 
-    async function getOrgUsersLocal(orgName,resetUserDatabases=false){
+    async function getOrgUsersLocal(orgName){
         setLoading(true)
 		try{
             const orgId= `Organization/${UTILS.encodeURISegment(orgName)}`
@@ -169,10 +162,9 @@ export const AccessControlHook=(accessControlDashboard,options)=> {
                               role,databases,scope:orgId}
                 responseFormatted.push(item)
             });
-
-            if(resetUserDatabases)setUserDatabaseList(null)
-			setOrgUsers(responseFormatted)         
-            return response
+            console.log("getOrgUsersLocal",responseFormatted)
+			setOrgUsers(responseFormatted)
+            return responseFormatted         
 		}catch(err){
             console.log(err.message)
 			setError('I can not get the user list')
@@ -214,11 +206,12 @@ export const AccessControlHook=(accessControlDashboard,options)=> {
         }
 
     }
+    
     async function deleteTeamRequestAccess(accId,orgName){
         setLoading(true)
 		try{
             await clientAccessControl.deleteAccessRequest(accId,orgName)
-			getTeamRequestAccessList(orgName)         
+			const response = await getTeamRequestAccessList(orgName)         
             return response
 		}catch(err){
 			setError('I can not delete the access list')
@@ -241,11 +234,10 @@ export const AccessControlHook=(accessControlDashboard,options)=> {
 
     }
 
-    async function deleteInvitation(orgName,invid){
+    function deleteInvitation(orgName,invid){
         setLoading(true)
 		try{
-            await clientAccessControl.deleteOrgInvite(invid,orgName)
-			getOrgInvitations(orgName)
+            return clientAccessControl.deleteOrgInvite(invid,orgName)
 		}catch(err){
            setError(formatMessage(err))
 		}finally{
@@ -254,20 +246,22 @@ export const AccessControlHook=(accessControlDashboard,options)=> {
     }
 
     async function deleteUserFromOrganization(orgName,userid){
-        setLoading(true)
+        resetStatus()
 		try{
 			await clientAccessControl.removeUserFromOrg(userid,orgName)
-            getOrgUsers(orgName)
+            return true
 		}catch(err){
             setError(formatMessage(err))
+            return false
 		}finally{
         	setLoading(false)
         }
     }
 
+  
+
     async function createRole(name,actions){
-        setLoading(true)
-        setError(false)
+        resetStatus()
 		try{
 			await clientAccessControl.createRole(name,actions)
             return true
@@ -307,10 +301,10 @@ export const AccessControlHook=(accessControlDashboard,options)=> {
     * I use the filter function to format or remove item from the result
     */
      async function getResultTable(methodName,filterFunction){
-        setLoading(true)
+        resetStatus()
 		try{
 			let result = await clientAccessControl[methodName]()
-            if(filterFunction){
+            if(filterFunction && Array.isArray(result)){
                 result = filterFunction(result)
             }
             setResultTable(result.reverse())
@@ -327,9 +321,7 @@ export const AccessControlHook=(accessControlDashboard,options)=> {
     * the methodName point at the differnt function in accessControl class
     */
     async function deleteElementByName(methodName,name){
-        setLoading(true)
-        setError(false)
-        setSuccessMessage(false)
+        resetStatus()
 		try{
 			await clientAccessControl[methodName](name)
             return true
@@ -345,9 +337,7 @@ export const AccessControlHook=(accessControlDashboard,options)=> {
     * create a new document
     */
     async function createElementByName(methodName,name,extraParam){
-        setLoading(true)
-        setError(false)
-        setSuccessMessage(false)
+        resetStatus()
 		try{
 			await clientAccessControl[methodName](name,extraParam)
             return true
@@ -381,7 +371,6 @@ export const AccessControlHook=(accessControlDashboard,options)=> {
             userDatabaseList,
             deleteUserFromOrganization,
             deleteInvitation,
-            resetInvitation,
             orgInvitations,
             orgUsers,
             //invitationSent,
