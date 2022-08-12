@@ -37,27 +37,24 @@ export const AccessControlHook=(accessControlDashboard,options)=> {
 
     async function sendInvitation(orgName,emailTo,role){
         const errorMessage = options.hookMessage.sendInvitation.error
-        //const successMessage = options.hookMessage.sendInvitation.success   
         resetStatus()
         try{
             await clientAccessControl.sendOrgInvite(emailTo, role, "",orgName)
             return true
         }catch(err){
-            setError(errorMessage)
+            const message = formatMessage(err)
+            setError(`${errorMessage},  ${message}`)
             return false
         }finally{          
             setLoading(false)
         }
-        
     }
 
     /*
     * I can not use the general one because I need in accessControl
     */
     async function getRolesList(){
-        setLoading(true)
-        setError(false) 
-        setSuccessMessage(false)
+        resetStatus()
         const errorMessage = "I can not get the roles list"
         try{
             const result = await accessControlDashboard.callGetRolesList()
@@ -117,14 +114,14 @@ export const AccessControlHook=(accessControlDashboard,options)=> {
         }
 
     } 
-     //%3D%25team
+    // remote getUser we can remove this call and use getTableResult
     async function getOrgUsers(orgName){
         setLoading(true)
 		try{
 			const response = await clientAccessControl.getOrgUsers(orgName)
-            //if(resetUserDatabases)setUserDatabaseList(null)
-			setOrgUsers(response)         
-            return response
+            const resp = Array.isArray(response) ? response.reverse() : []
+			setOrgUsers(resp)         
+            return resp
 		}catch(err){
             console.log(err.message)
 			setError('I can not get the user list')

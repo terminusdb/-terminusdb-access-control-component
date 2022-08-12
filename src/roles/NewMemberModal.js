@@ -10,10 +10,8 @@ export const NewMemberModal = ({show, setShow, team, accessControlDashboard,opti
     const {sendInvitation,
           successMessage,
           loading,
-          resetInvitation,
-          errorMessage} =  AccessControlHook(accessControlDashboard,options)
+          errorMessage,setError} =  AccessControlHook(accessControlDashboard,options)
     
-    const [error, setError]=useState(false)
     const emailInput = useRef(null);
     const roles = accessControlDashboard.getRolesList()
 
@@ -21,7 +19,7 @@ export const NewMemberModal = ({show, setShow, team, accessControlDashboard,opti
         const email = emailInput.current.value
         //alert(email)
         if(!email || email === "") {
-            setError(true)
+            setError("Email is mandatory")
             return
         }else{
             await sendInvitation(team,email,role).then(done=>{
@@ -52,10 +50,11 @@ export const NewMemberModal = ({show, setShow, team, accessControlDashboard,opti
                 errorMessage={errorMessage} 
                 successMessage={successMessage} 
                 show={show}
-                rolesList={roles}>
-            {error && <span className="d-flex">
+                rolesList={roles}
+                setError={setError}>
+            {/*error && <span className="d-flex">
                 <BiError className="text-danger mt-1 mr-1"/><p className="text-danger">Email is mandatory</p>
-            </span>}
+    </span>*/}
             <Form onKeyPress={handleKeyPress}>
                 <Form.Group>
                     <Form.Control
@@ -65,7 +64,7 @@ export const NewMemberModal = ({show, setShow, team, accessControlDashboard,opti
                         placeholder="Email"
                         aria-describedby="inputGroupPrepend"
                         required
-                        onBlur={resetInvitation}
+                        onBlur={()=>{setError(false)}}
                     />
                 </Form.Group>
             </Form>

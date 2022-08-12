@@ -61,7 +61,7 @@ export const RoleListModal = (props)=>{
         <Modal.Body>
             {props.successMessage &&
             <Alert variant="success">the invitation has been sent</Alert>}
-            {props.errorMessage &&  <Alert variant="danger"  onClose={() => setError(false)} dismissible>{props.errorMessage}</Alert>}
+            {props.errorMessage &&  <Alert variant="danger"  onClose={() => props.setError(false)} dismissible>{props.errorMessage}</Alert>}
 
             {props.children}
             {rolesList &&
@@ -69,10 +69,14 @@ export const RoleListModal = (props)=>{
             }
         </Modal.Body>
         <Modal.Footer>
-        {!props.loading && <Button className="btn-info" onClick={()=>{props.clickButton(userRoles)}}>
-                    <FiUserPlus className="mr-2"/>Send
-                </Button>}
-        {/*props.loading && <Loading message={`Sending request ...`} />*/}
+            <Button
+                disabled={props.loading}
+                id ="add_element_button"
+                variant="info" 
+                title={`Add New User`} 
+                onClick={()=>{props.clickButton(userRoles)}}>
+                    <FiUserPlus className="mr-2"/>{props.loading ? 'Sending Request ...' : "Send"} 
+            </Button>
         </Modal.Footer>
         </Modal>
 }

@@ -19,6 +19,7 @@ export const defaultSetting ={
         ADD_USER:false,
         ADD_INVITATION:false,
         ADD_ROLE:false,  
+        ADD_USER_TO_THE_TEAM:false
     },
     hookMessage:{
         sendInvitation:{

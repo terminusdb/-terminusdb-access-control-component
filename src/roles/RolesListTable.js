@@ -7,6 +7,7 @@ import {RiDeleteBin7Line} from "react-icons/ri"
 import { DeleteElementByName } from "./DeleteElementByName"
 import { CreateRoleModal } from "./CreateRoleModal"
 import {DELETE_ROLE} from "../utils/default"
+import {Loading} from "../Loading"
 
 export const RoleListTable = ({accessControlDashboard,options}) => {  
     if(!accessControlDashboard) return ""
@@ -45,11 +46,7 @@ export const RoleListTable = ({accessControlDashboard,options}) => {
     const tableConfig = getListConfigBase(10, getActionButtons)
 
     if(loading){
-        return  <Row className="mr-5 ml-2">
-                    <Card className="shadow-sm m-4">
-                        <div>LOADING .......</div>
-                    </Card>
-                </Row>
+        return  <Loading/>
     }
     
 
@@ -70,6 +67,7 @@ export const RoleListTable = ({accessControlDashboard,options}) => {
                                            setShow={setShowNewRoleModal}/>}
        
         <Row className="mr-5 ml-2">
+            <Col>
             <Card className="shadow-sm m-4">
                 <Card.Header className="bg-transparent">
                     <Row>
@@ -99,6 +97,7 @@ export const RoleListTable = ({accessControlDashboard,options}) => {
                     />
                 </Card.Body>
             </Card>
+            </Col>
         </Row>
     </React.Fragment>
 }

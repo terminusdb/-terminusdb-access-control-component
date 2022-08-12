@@ -7,7 +7,7 @@ import {getUsersDatabaseListConfig} from "../ViewConfig"
 import {AccessControlHook} from "../hooks/AccessControlHook"
 import {ManageUserCapabilityModal} from "./ManageUserCapabilityModal"
 import {formatCell} from "./formatData"
-
+import {Loading} from "../Loading"
 export const UserDatabasesList = ({team,selectedUser,accessControlDashboard,options}) => {  
     const [currentRoleToUpdate,setCurrentRoleToUpdate]=useState(null)
     const [show, setShow] = useState(false)
@@ -47,11 +47,7 @@ export const UserDatabasesList = ({team,selectedUser,accessControlDashboard,opti
     const databaseListConfig = getUsersDatabaseListConfig(10,getActionDbButtons)
     
     if(loading){
-        return  <Row className="mr-5 ml-2">
-                    <Card className="shadow-sm m-4">
-                        <div>LOADING .......</div>
-                    </Card>
-                </Row>
+        return <Loading/>
     }
 
     return <React.Fragment>

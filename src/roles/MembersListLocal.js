@@ -9,6 +9,7 @@ import {RoleListModal} from "./RoleList"
 import {UserDatabasesListLocal} from "./UserDatabasesListLocal"
 import {RevokeCapability } from "./RevokeCapability"
 import {AddUserCapabilityModal } from "./AddUserCapabilityModal"
+import {Loading} from "../Loading"
 
 export const MembersListLocal = ({organizationInfo,currentUser,accessControlDashboard,options}) => {  
     if(!accessControlDashboard)return ""
@@ -96,11 +97,7 @@ export const MembersListLocal = ({organizationInfo,currentUser,accessControlDash
     const tableConfig = getUsersListConfigLocal(10, getActionButtons)
     
     if(loading){
-        return  <Row className="mr-5 ml-2">
-                    <Card className="shadow-sm m-4">
-                        <div>LOADING .......</div>
-                    </Card>
-                </Row>
+        return  <Loading/>
     }
 
     const labels = selectTeamRow ? {
@@ -123,6 +120,7 @@ export const MembersListLocal = ({organizationInfo,currentUser,accessControlDash
                          team = {team}
                         />}
         <Row className="mr-5 ml-2">
+            <Col>
             <Card className="shadow-sm m-4">                
                     <h4 className="mt-3 mb-2 mr-4"><strong className="text-success">{team}</strong> -- Organization Users Roles</h4> 
                 <Card.Header className="bg-transparent">                                  
@@ -155,7 +153,7 @@ export const MembersListLocal = ({organizationInfo,currentUser,accessControlDash
                 </Card.Body>
                 </Card>
                 {selectTeamRow && <UserDatabasesListLocal updateTable={updateTable} team={team} selectedUser={selectTeamRow} accessControlDashboard={accessControlDashboard}/>}
-                   
+            </Col>      
         </Row>
     </React.Fragment>
 }

@@ -11,13 +11,16 @@ import {ManageUserCapabilityModal} from "./ManageUserCapabilityModal"
 import {formatCell} from "./formatData"
 import {UserDatabasesList} from "./UserDatabasesList"
 import {DeleteTeamUser} from "./DeleteTeamUser"
-
+import { NewMemberModal } from "./NewMemberModal"
+import {Loading} from "../Loading"
 export const MembersList = ({team,currentUser,accessControlDashboard,options}) => {  
     if(!accessControlDashboard)return ""
 
     const [selectTeamRow,setSelectTeamRow]=useState(null)
     const [selectUserToDelete,setSelectUserToDelete]=useState(null)
     const [currentRoleToUpdate,setCurrentRoleToUpdate]=useState(null)
+
+    const [showNewMemberModal, setShowNewMemberModal] = useState(false)
 
     const [show, setShow] = useState(false)
     const [showDelete, setShowDelete] = useState(false)
@@ -94,14 +97,14 @@ export const MembersList = ({team,currentUser,accessControlDashboard,options}) =
     const tableConfig = getUsersListConfig(10, getActionButtons,getPicture)
     
     if(loading){
-        return  <Row className="mr-5 ml-2">
-                    <Card className="shadow-sm m-4">
-                        <div>LOADING .......</div>
-                    </Card>
-                </Row>
+        return  <Loading/>
     }
 
     return <React.Fragment>
+         {showNewMemberModal && 
+            <NewMemberModal accessControlDashboard={accessControlDashboard} options={options} updateTable={updateResultTable}
+                team={team} show={showNewMemberModal} setShow={setShowNewMemberModal}/>
+         }
         {currentRoleToUpdate && show && 
         <ManageUserCapabilityModal currentRoleToUpdate={currentRoleToUpdate} 
             showModal={show}
@@ -119,11 +122,23 @@ export const MembersList = ({team,currentUser,accessControlDashboard,options}) =
                         userSelected={selectUserToDelete}
                         />}
         <Row className="mr-5 ml-2">
+            <Col>
             <Card className="shadow-sm m-4">
                 <Card.Header className=" d-flex justify-content-between bg-transparent">
-                    <h6 className="mb-0 mt-1 float-left w-100 text-muted">Total Members
-                        <Badge variant="info" className="text-dark ml-3">{rowCount}</Badge>
-                    </h6>
+                <Row>
+                    <Col>
+                        <h6 className="mb-0 mt-1 float-left text-muted">Total Items
+                            <Badge variant="info" className="text-dark ml-3">{rowCount}</Badge>
+                        </h6>
+                    </Col>
+
+                    {options.buttons.ADD_USER_TO_THE_TEAM && <Col >
+                        <button onClick={()=>setShowNewMemberModal(true)} style={{maxWidth:"200px"}} title={`Invite a mermber to ${team} team`}
+                                type="button" className="btn-new-data-product mr-1 pt-2 pb-2 pr-4 pl-4 btn btn-sm btn btn-info">
+                               {options.labels.inviteMember}
+                        </button>
+                    </Col>}
+                    </Row>
 
                 </Card.Header>
                 <Card.Body>
@@ -141,7 +156,7 @@ export const MembersList = ({team,currentUser,accessControlDashboard,options}) =
                 </Card.Body>
                 </Card>
                 {selectTeamRow && <UserDatabasesList team={team} selectedUser={selectTeamRow} accessControlDashboard={accessControlDashboard}/>}
-                   
+            </Col>
         </Row>
     </React.Fragment>
 }

@@ -62,7 +62,7 @@ export const CreateUserModal = ({accessControlDashboard,showModal, setShowModal,
                 id ="add_element_button"
                 variant="info" 
                 title={`Add New User`} 
-                onClick={runCreate}>{loading ? 'Loading ...' : "Add New User"} 
+                onClick={runCreate}>{loading ? 'Sending Request ...' : "Add New User"} 
             </Button>
         </Modal.Footer>
     </Modal>

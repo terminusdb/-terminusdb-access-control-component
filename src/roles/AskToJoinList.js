@@ -6,7 +6,7 @@ import {getAskAccessListConfig} from "../ViewConfig"
 import {RiDeleteBin7Line} from "react-icons/ri"
 import {AiOutlineUserAdd} from "react-icons/ai"
 import {NewMemberModal} from "./NewMemberModal"
-//import {PROGRESS_BAR_COMPONENT} from "../constants"
+import {Loading} from "../Loading"
 
 export const AskToJoinList = ({team,setShow,accessControlDashboard,options}) => {  
     if(!accessControlDashboard) return ""
@@ -55,19 +55,15 @@ export const AskToJoinList = ({team,setShow,accessControlDashboard,options}) => 
     const tableConfig = getAskAccessListConfig(10, getDeleteButton)
 
     if(loading){
-        return  <Row className="mr-5 ml-2">
-                    <Card className="shadow-sm m-4">
-                        <div>LOADING .......</div>
-                    </Card>
-                </Row>
+        return <Loading/>
     }
-    
 
     return <React.Fragment>
          {showNewMemberModal && <NewMemberModal accessControlDashboard={accessControlDashboard} options={options} updateTable={updateResultTable}
                 team={team} show={showNewMemberModal} setShow={setShowNewMemberModal} defaultEmail={defaultEmail}/>}
     
         <Row className="mr-5 ml-2">
+            <Col>
             <Card className="shadow-sm m-4">
                 <Card.Header className=" d-flex justify-content-between bg-transparent">
                     <h6 className="mb-0 mt-1 float-left w-100 text-muted">Total Members
@@ -88,6 +84,7 @@ export const AskToJoinList = ({team,setShow,accessControlDashboard,options}) => 
                     />
                 </Card.Body>
             </Card>
+         </Col>
         </Row>
     </React.Fragment>
 }
