@@ -8,7 +8,7 @@ import {AiOutlineUserAdd} from "react-icons/ai"
 import { GET_ALL_USERS, DELETE_USER } from "../utils/default"
 import { DeleteElementByName } from "./DeleteElementByName"
 import { CreateUserModal } from "./CreateUserModal"
-import {AddUserCapabilityModal} from "./AddUserCapabilityModal"
+import { Loading } from "../Loading"
 
 export const AllUserList = ({accessControlDashboard,options}) => {  
     if(!accessControlDashboard) return ""
@@ -64,11 +64,7 @@ export const AllUserList = ({accessControlDashboard,options}) => {
     const tableConfig = getListConfigBase(10, getActionButtons)
 
     if(loading){
-        return  <Row className="mr-5 ml-2">
-                    <Card className="shadow-sm m-4">
-                        <div>LOADING .......</div>
-                    </Card>
-                </Row>
+        return  <Loading/>
     }
 
     return <React.Fragment>
@@ -89,6 +85,7 @@ export const AllUserList = ({accessControlDashboard,options}) => {
                         setShowModal={setShowAdd}/>}
 
         <Row className="mr-5 ml-2">
+            <Col>
             <Card className="shadow-sm m-4">
                 <Card.Header className="bg-transparent">
                     <Row>
@@ -118,6 +115,7 @@ export const AllUserList = ({accessControlDashboard,options}) => {
                     />
                 </Card.Body>
             </Card>
+            </Col>
         </Row>
     </React.Fragment>
 }

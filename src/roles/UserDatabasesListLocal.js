@@ -8,6 +8,7 @@ import {AccessControlHook} from "../hooks/AccessControlHook"
 import {AddUserCapabilityModal} from "./AddUserCapabilityModal"
 import {RiDeleteBin7Line} from "react-icons/ri"
 import {RevokeCapability } from "./RevokeCapability"
+import {Loading} from "../Loading"
 
 export const UserDatabasesListLocal = ({team,selectedUser,accessControlDashboard,options,updateTable}) => {  
     const [showAdd, setShowAdd] = useState(false)
@@ -84,11 +85,7 @@ export const UserDatabasesListLocal = ({team,selectedUser,accessControlDashboard
     const databaseListConfig = getUsersDatabaseLocalListConfig(10,getActionDbButtons)
     
     if(loading){
-        return  <Row className="mr-5 ml-2">
-                    <Card className="shadow-sm m-4">
-                        <div>LOADING .......</div>
-                    </Card>
-                </Row>
+        return  <Loading/>
     }
 
     const labels = selectedRow ? {
