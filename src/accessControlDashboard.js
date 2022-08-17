@@ -31,12 +31,12 @@ export const AccessControlDashboard = (clientAccessControl)=>{
 		try{
 			const result = await __clientAccessControl.getTeamUserRoles(userName,orgName)
             let teamRoles = []
-            if(result && result.capability){
+            if(result && result.capability && result.capability.length>0){
                 if(result.capability.length ===1){
                     teamRoles = result.capability[0].role
                 }else{
                     const orgId = `Organization/${UTILS.encodeURISegment(orgName)}`
-                    const cap = result.capability.find(item=>{item.scope === orgId})
+                    const cap = result.capability.find(item=>item.scope === orgId)
                     teamRoles = cap && cap.role ? cap.role : []
                 }
             }        
