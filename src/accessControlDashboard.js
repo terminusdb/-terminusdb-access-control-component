@@ -1,4 +1,6 @@
 //every component 
+import {UTILS} from '@terminusdb/terminusdb-client'
+
 export const AccessControlDashboard = (clientAccessControl)=>{
 
     let __rolesList = []
@@ -23,17 +25,21 @@ export const AccessControlDashboard = (clientAccessControl)=>{
             }
     }
 
-   
+          // review with database capability 
+            // before we have to fix team
     async function callGetUserTeamRole(userName,orgName){
 		try{
 			const result = await __clientAccessControl.getTeamUserRoles(userName,orgName)
-            let teamRoles = result.capability.length ===1 ?  result.capability[0].role : []
-            // review with database capability 
-            // before we have to fix team
-            if(result.capability.length >1 ){
-                const cap = result.capability.find(item=>{item.scope === orgName})
-                teamRoles = cap.role
-            }            
+            let teamRoles = []
+            if(result && result.capability){
+                if(result.capability.length ===1){
+                    teamRoles===result.capability[0].role
+                }else{
+                    const orgId = `Organization/${UTILS.encodeURISegment(orgName)}`
+                    const cap = result.capability.find(item=>{item.scope === orgId})
+                    teamRoles = cap && cap.role ? cap.role : []
+                }
+            }        
             setTeamActions(teamRoles)
 		}catch(err){
             if(err.data && err.status === 404 && err.data["api:message"]){
@@ -49,7 +55,7 @@ export const AccessControlDashboard = (clientAccessControl)=>{
     
     // if I got the role expanded is better
     const formatActionsRoles = (userRoles)=> {
-        if(!Array.isArray(__rolesList)) return {}
+        if(!Array.isArray(userRoles))return {}
         const actionsObj = {}
         userRoles.forEach(role => {          
             if(role.action && Array.isArray(role.action)){
