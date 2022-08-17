@@ -33,7 +33,7 @@ export const AccessControlDashboard = (clientAccessControl)=>{
             let teamRoles = []
             if(result && result.capability){
                 if(result.capability.length ===1){
-                    teamRoles===result.capability[0].role
+                    teamRoles = result.capability[0].role
                 }else{
                     const orgId = `Organization/${UTILS.encodeURISegment(orgName)}`
                     const cap = result.capability.find(item=>{item.scope === orgId})
